@@ -4,27 +4,27 @@
 
 #include "BinaryExpression.h"
 
-class Subtraction : public BinaryExpression
+class Sub : public BinaryExpression
 {
 public:
-    Subtraction(Expression* first_operand, Expression* second_operand);
+    Sub(Expression* first_operand, Expression* second_operand);
 
     Expression *diff() const override;
     std::string tostring() const override;
 };
 
-Subtraction::Subtraction(Expression *first_operand, Expression *second_operand)
+Sub::Sub(Expression *first_operand, Expression *second_operand)
 {
     first_operand_ = first_operand;
     second_operand_ = second_operand;
 }
 
-Expression *Subtraction::diff() const
+Expression *Sub::diff() const
 {
-    return new Subtraction(first_operand_->diff(), second_operand_->diff());
+    return new Sub(first_operand_->diff(), second_operand_->diff());
 }
 
-std::string Subtraction::tostring() const
+std::string Sub::tostring() const
 {
     return "(" + first_operand_->tostring() + " - " + second_operand_->tostring() + ")";
 }

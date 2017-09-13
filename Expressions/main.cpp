@@ -2,12 +2,12 @@
 #include "src/Expression.h"
 #include "src/Sum.h"
 #include "src/Variable.h"
-#include "src/Subtraction.h"
+#include "src/Sub.h"
 
 int main()
 {
     Expression* test_sum = new Sum(new Variable("a"), new Variable("b"));
-    Expression* test_sub = new Subtraction(new Number(5), new Variable("c"));
+    Expression* test_sub = new Sub(new Number(5), new Variable("c"));
 
     std::cout << test_sum->tostring() << std::endl;
     std::cout << test_sum->diff()->tostring() << std::endl;
