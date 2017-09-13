@@ -24,7 +24,7 @@ private:
 
 Expression *Variable::diff() const
 {
-    return new Number(0);
+    return new Number(1);
 }
 
 std::string Variable::tostring() const
