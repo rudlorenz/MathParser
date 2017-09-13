@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.8)
+project(Expressions)
+
+set(CMAKE_CXX_STANDARD 17)
+
+set(SOURCE_FILES main.cpp src/Expression.h src/Number.h src/Variable.h src/BinaryExpression.h src/Sum.h src/Subtraction.h)
+add_executable(Expressions ${SOURCE_FILES})
