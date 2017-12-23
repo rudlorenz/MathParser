@@ -12,6 +12,7 @@ public:
 
     Expression *diff() const override;
     std::string tostring() const override;
+    double evaluate(double x) const override;
 
 };
 
@@ -33,6 +34,11 @@ Expression *Mul::diff() const
 std::string Mul::tostring() const
 {
     return "(" + first_operand_->tostring() + " * " + second_operand_->tostring() + ")";;
+}
+
+double Mul::evaluate(double x) const
+{
+    return first_operand_->evaluate(x) * second_operand_->evaluate(x);
 }
 
 #endif //EXPRESSIONS_MUL_H

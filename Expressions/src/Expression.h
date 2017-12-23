@@ -9,7 +9,7 @@ class Expression
 public:
     virtual Expression* diff() const = 0;
     virtual std::string tostring() const = 0;
-
+    virtual double evaluate(double x) const = 0;
 
     virtual ~Expression() {};
 };

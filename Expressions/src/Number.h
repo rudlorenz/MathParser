@@ -11,6 +11,7 @@ public:
 
     Expression* diff() const override;
     std::string tostring() const override;
+    double evaluate(double x) const override;
 
     ~Number() override = default;
 
@@ -27,6 +28,11 @@ Expression* Number::diff() const
 std::string Number::tostring() const
 {
     return std::to_string(value_);
+}
+
+double Number::evaluate(double x) const
+{
+    return value_;
 }
 
 

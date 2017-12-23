@@ -13,6 +13,8 @@ public:
 
     Expression *diff() const override;
     std::string tostring() const override;
+    double evaluate(double x) const override;
+
 };
 
 Div::Div(Expression *first_operand, Expression *second_operand)
@@ -33,6 +35,11 @@ Expression *Div::diff() const
 std::string Div::tostring() const
 {
     return "(" + first_operand_->tostring() + " / " + second_operand_->tostring() + ")";;
+}
+
+double Div::evaluate(double x) const
+{
+    return first_operand_->evaluate(x) / second_operand_->evaluate(x);
 }
 
 

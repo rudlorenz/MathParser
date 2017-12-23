@@ -11,6 +11,7 @@ public:
 
     Expression *diff() const override;
     std::string tostring() const override;
+    double evaluate(double x) const override;
 
 };
 
@@ -28,6 +29,11 @@ Sum::Sum(Expression *first_operand, Expression *second_operand)
 {
     first_operand_ = first_operand;
     second_operand_ = second_operand;
+}
+
+double Sum::evaluate(double x) const
+{
+    return first_operand_->evaluate(x) + second_operand_->evaluate(x);
 }
 
 #endif //EXPRESSIONS_SUM_H

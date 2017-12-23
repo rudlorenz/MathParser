@@ -39,5 +39,19 @@ int main()
               << test_cos->tostring() << std::endl;
     std::cout << test_cos->diff()->tostring() << std::endl;
 
+    std::cout << "\n\n";
+
+    Expression* test_sum_eval = new Sum(new Variable("a"), new Number(5));
+    std::cout << test_sum_eval->evaluate(10) << std::endl;
+
+    Expression* test_sub_eval = new Sub(new Variable("a"), new Number(5));
+    std::cout << test_sub_eval->evaluate(10) << std::endl;
+
+    Expression* test_div_eval = new Div(new Variable("a"), new Number(5));
+    std::cout << test_div_eval->evaluate(10) << std::endl;
+
+    Expression* test_mul_eval = new Mul(new Variable("a"), new Number(5));
+    std::cout << test_mul_eval->evaluate(10) << std::endl;
+
     return 0;
 }

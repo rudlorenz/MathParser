@@ -15,6 +15,7 @@ public:
 
     Expression *diff() const override;
     std::string tostring() const override;
+    double evaluate(double x) const override;
 
     ~Variable() override;
 
@@ -34,6 +35,11 @@ std::string Variable::tostring() const
 
 Variable::~Variable()
 {
+}
+
+double Variable::evaluate(double x) const
+{
+    return x;
 }
 
 

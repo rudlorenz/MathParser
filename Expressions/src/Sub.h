@@ -11,6 +11,8 @@ public:
 
     Expression *diff() const override;
     std::string tostring() const override;
+    double evaluate(double x) const override;
+
 };
 
 Sub::Sub(Expression *first_operand, Expression *second_operand)
@@ -27,6 +29,11 @@ Expression *Sub::diff() const
 std::string Sub::tostring() const
 {
     return "(" + first_operand_->tostring() + " - " + second_operand_->tostring() + ")";
+}
+
+double Sub::evaluate(double x) const
+{
+    return first_operand_->evaluate(x) - second_operand_->evaluate(x);
 }
 
 #endif //EXPRESSIONS_SUBTRACTION_H

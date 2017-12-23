@@ -5,6 +5,7 @@
 #include "Expression.h"
 #include "Mul.h"
 #include "Sub.h"
+#include <cmath>
 
 class Sin : public Expression
 {
@@ -13,6 +14,7 @@ public:
 
     Expression *diff() const override;
     std::string tostring() const override;
+    double evaluate(double x) const override;
 
     ~Sin() override;
 
@@ -27,6 +29,7 @@ public:
 
     Expression *diff() const override;
     std::string tostring() const override;
+    double evaluate(double x) const override;
 
     ~Cos() override;
 
@@ -52,6 +55,11 @@ Cos::~Cos()
     delete value_;
 }
 
+double Cos::evaluate(double x) const
+{
+    return cos(x);
+}
+
 Expression *Sin::diff() const
 {
     return new Mul(value_->diff(), new Cos(value_));
@@ -65,6 +73,11 @@ std::string Sin::tostring() const
 Sin::~Sin()
 {
     delete value_;
+}
+
+double Sin::evaluate(double x) const
+{
+    return sin(x);
 }
 
 
