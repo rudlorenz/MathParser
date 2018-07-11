@@ -10,7 +10,7 @@
 class Sin : public Expression
 {
 public:
-    Sin(Expression* value) : value_(value) {};
+    explicit Sin(Expression* value) : value_(value) {};
 
     Expression *diff() const override;
     std::string tostring() const override;
@@ -25,7 +25,7 @@ private:
 class Cos : public Expression
 {
 public:
-    Cos(Expression* value): value_(value) {};
+    explicit Cos(Expression* value): value_(value) {};
 
     Expression *diff() const override;
     std::string tostring() const override;
