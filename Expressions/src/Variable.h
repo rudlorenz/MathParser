@@ -1,6 +1,4 @@
-#ifndef EXPRESSIONS_VARIABLE_H
-#define EXPRESSIONS_VARIABLE_H
-
+#pragma once
 
 #include <utility>
 
@@ -13,34 +11,21 @@ public:
     Variable() : name_() {};
     explicit Variable(std::string name) : name_(std::move(name)) {};
 
-    Expression *diff() const override;
-    std::string tostring() const override;
-    double evaluate(double x) const override;
+    std::shared_ptr<Expression> diff() const override
+    {
+        return std::make_shared<Number>(1);
+    }
 
-    ~Variable() override;
+    std::string tostring() const override
+    {
+        return name_;
+    }
+
+    double evaluate(double x) const override
+    {
+        return x;
+    }
 
 private:
     std::string name_;
 };
-
-Expression *Variable::diff() const
-{
-    return new Number(1);
-}
-
-std::string Variable::tostring() const
-{
-    return name_;
-}
-
-Variable::~Variable()
-{
-}
-
-double Variable::evaluate(double x) const
-{
-    return x;
-}
-
-
-#endif //EXPRESSIONS_VARIABLE_H

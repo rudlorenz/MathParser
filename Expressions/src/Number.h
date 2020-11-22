@@ -1,5 +1,4 @@
-#ifndef EXPRESSIONS_NUMBER_H
-#define EXPRESSIONS_NUMBER_H
+#pragma once
 
 #include "Expression.h"
 
@@ -9,31 +8,21 @@ public:
     Number() : value_() {};
     explicit Number(const int& value) : value_(value) {};
 
-    Expression* diff() const override;
-    std::string tostring() const override;
-    double evaluate(double x) const override;
+    std::shared_ptr<Expression> diff() const override
+    {
+        return std::make_shared<Number>(0);
+    }
 
-    ~Number() override = default;
+    std::string tostring() const override
+    {
+        return std::to_string(value_);
+    }
+
+    double evaluate(double) const override
+    {
+        return value_;
+    }
 
 private:
     int value_;
 };
-
-Expression* Number::diff() const
-{
-    return new Number(0);
-}
-
-//should be RVO-d
-std::string Number::tostring() const
-{
-    return std::to_string(value_);
-}
-
-double Number::evaluate(double x) const
-{
-    return value_;
-}
-
-
-#endif //EXPRESSIONS_NUMBER_H

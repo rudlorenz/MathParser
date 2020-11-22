@@ -10,9 +10,9 @@
 int main()
 {
     //sin^2(a) + cos^2(a)
-    Expression* test_complex = new Sum(
-            new Mul(new Sin(new Variable("a")), new Sin(new Variable("a"))),
-            new Mul(new Cos(new Variable("a")), new Cos(new Variable("a")))
+    const auto test_complex = std::make_shared<Sum>(
+        std::make_shared<Mul>(std::make_shared<Sin>(std::make_shared<Variable>("a")), std::make_shared<Sin>(std::make_shared<Variable>("a"))),
+        std::make_shared<Mul>(std::make_shared<Cos>(std::make_shared<Variable>("a")), std::make_shared<Cos>(std::make_shared<Variable>("a")))
     );
 
     std::cout << test_complex->evaluate(1) << "\n";

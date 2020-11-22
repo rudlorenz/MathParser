@@ -1,24 +1,17 @@
-#ifndef EXPRESSIONS_BINARYEXPRESSION_H
-#define EXPRESSIONS_BINARYEXPRESSION_H
-
-
+#pragma once
 #include "Expression.h"
+
+#include <memory>
 
 class BinaryExpression : public Expression
 {
 public:
-    virtual ~BinaryExpression();
+    BinaryExpression(std::shared_ptr<Expression> lhs, std::shared_ptr<Expression> rhs)
+        : lhs_(std::move(lhs))
+        , rhs_(std::move(rhs))
+    {}
 
 protected:
-    Expression*  first_operand_;
-    Expression* second_operand_;
+    std::shared_ptr<Expression> lhs_;
+    std::shared_ptr<Expression> rhs_;
 };
-
-BinaryExpression::~BinaryExpression()
-{
-    delete first_operand_;
-    delete second_operand_;
-}
-
-
-#endif //EXPRESSIONS_BINARYEXPRESSION_H

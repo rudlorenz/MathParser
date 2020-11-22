@@ -1,84 +1,61 @@
-#ifndef EXPRESSIONS_SIN_H
-#define EXPRESSIONS_SIN_H
-
+#pragma once
 
 #include "Expression.h"
 #include "Mul.h"
 #include "Sub.h"
+
 #include <cmath>
+
+class Cos;
 
 class Sin : public Expression
 {
 public:
-    explicit Sin(Expression* value) : value_(value) {};
+    explicit Sin(std::shared_ptr<Expression> value) : value_(std::move(value)) {};
 
-    Expression *diff() const override;
-    std::string tostring() const override;
-    double evaluate(double x) const override;
+    std::shared_ptr<Expression> diff() const override
+    {
+        return std::make_shared<Mul>(value_->diff(), std::make_shared<Cos>(value_));
+    }
 
-    ~Sin() override;
+    std::string tostring() const override
+    {
+        return "sin(" + value_->tostring() + ")";
+    }
+    double evaluate(double x) const override
+    {
+        return sin(x);
+    }
 
 private:
-    Expression* value_;
+    std::shared_ptr<Expression> value_;
 };
 
 class Cos : public Expression
 {
 public:
-    explicit Cos(Expression* value): value_(value) {};
+    explicit Cos(std::shared_ptr<Expression> value): value_(std::move(value)) {};
 
-    Expression *diff() const override;
-    std::string tostring() const override;
-    double evaluate(double x) const override;
+    std::shared_ptr<Expression> diff() const override
+    {
+        return std::make_shared<Sum>(
+            value_->diff(),
+            std::make_shared<Sub>(std::make_shared<Number>(0), std::make_shared<Sin>(value_))
+        );
+    }
 
-    ~Cos() override;
+    std::string tostring() const override
+    {
+        return "cos(" + value_->tostring() + ")";
+    }
+
+    double evaluate(double x) const override
+    {
+        return cos(x);
+    }
+
 
 private:
-    Expression* value_;
+    std::shared_ptr<Expression> value_;
 };
 
-Expression *Cos::diff() const
-{
-    return new Sum(
-            value_->diff(),
-            new Sub(new Number(0), new Sin(value_))
-    );
-}
-
-std::string Cos::tostring() const
-{
-    return "cos(" + value_->tostring() + ")";
-}
-
-Cos::~Cos()
-{
-    delete value_;
-}
-
-double Cos::evaluate(double x) const
-{
-    return cos(x);
-}
-
-Expression *Sin::diff() const
-{
-    return new Mul(value_->diff(), new Cos(value_));
-}
-
-std::string Sin::tostring() const
-{
-    return "sin(" + value_->tostring() + ")";
-}
-
-Sin::~Sin()
-{
-    delete value_;
-}
-
-double Sin::evaluate(double x) const
-{
-    return sin(x);
-}
-
-
-#endif //EXPRESSIONS_SIN_H
