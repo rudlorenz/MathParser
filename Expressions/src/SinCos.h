@@ -2,6 +2,7 @@
 
 #include "Expression.h"
 #include "Mul.h"
+#include "Negate.h"
 #include "Number.h"
 #include "Sub.h"
 
@@ -50,7 +51,7 @@ public:
         return value_->contains_var(var)
             ? std::make_shared<Sum>(
                 value_->diff(var),
-                std::make_shared<Sub>(std::make_shared<Number>(0), std::make_shared<Sin>(value_))
+                std::make_shared<Negate>(std::make_shared<Sin>(value_))
             );
             : return std::make_shared<Number>(0);
     }

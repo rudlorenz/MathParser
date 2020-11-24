@@ -7,7 +7,7 @@ include_directories(src)
 
 set(SOURCE_FILES main.cpp src/Parser.cpp)
 set(HEADER_FILES src/Expression.h src/Number.h src/Variable.h src/BinaryExpression.h src/Sum.h src/Sub.h src/Mul.h
-        src/Div.h src/SinCos.h src/Parser.h)
+        src/Div.h src/SinCos.h src/Parser.h src/Negate.h)
 
 add_executable(expressions ${SOURCE_FILES} ${HEADER_FILES})
 

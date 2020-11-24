@@ -2,6 +2,7 @@
 
 #include "BinaryExpression.h"
 #include "Mul.h"
+#include "Negate.h"
 #include "Number.h"
 #include "Sub.h"
 
@@ -31,8 +32,7 @@ public:
         }
         // reciprocal rule
         if (!lhs_->contains_var(var) && rhs_->contains_var(var)) {
-            return std::make_shared<Sub>(
-                std::make_shared<Number>(0),
+            return std::make_shared<Negate>(
                 std::make_shared<Mul>(
                     lhs_,
                     std::make_shared<Div>(
