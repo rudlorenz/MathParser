@@ -3,7 +3,7 @@
 #include "BinaryExpression.h"
 #include "Number.h"
 
-class Sum : public BinaryExpression
+class Sum final : public BinaryExpression
 {
 public:
     Sum(std::shared_ptr<Expression> lhs, std::shared_ptr<Expression> rhs)

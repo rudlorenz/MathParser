@@ -5,7 +5,7 @@
 
 #include <utility>
 
-class Variable : public Expression
+class Variable final : public Expression
 {
 public:
     Variable() : name_() {};

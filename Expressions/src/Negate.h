@@ -2,7 +2,7 @@
 
 #include "Expression.h"
 
-class Negate : public Expression
+class Negate final : public Expression
 {
 public:
     Negate(std::shared_ptr<Expression> expr) : expr_(std::move(expr)) {};

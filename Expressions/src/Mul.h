@@ -4,7 +4,7 @@
 #include "Number.h"
 #include "Sum.h"
 
-class Mul : public BinaryExpression
+class Mul final : public BinaryExpression
 {
 public:
     Mul(std::shared_ptr<Expression> lhs, std::shared_ptr<Expression> rhs)

@@ -6,7 +6,7 @@
 #include "Number.h"
 #include "Sub.h"
 
-class Div : public BinaryExpression
+class Div final : public BinaryExpression
 {
 public:
     Div(std::shared_ptr<Expression> lhs, std::shared_ptr<Expression> rhs)

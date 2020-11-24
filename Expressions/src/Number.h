@@ -2,7 +2,7 @@
 
 #include "Expression.h"
 
-class Number : public Expression
+class Number final : public Expression
 {
 public:
     Number() : value_() {};

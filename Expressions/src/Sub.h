@@ -3,7 +3,7 @@
 #include "BinaryExpression.h"
 #include "Number.h"
 
-class Sub : public BinaryExpression
+class Sub final : public BinaryExpression
 {
 public:
     Sub(std::shared_ptr<Expression> lhs, std::shared_ptr<Expression> rhs)

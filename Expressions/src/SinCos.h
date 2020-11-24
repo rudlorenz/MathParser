@@ -10,7 +10,7 @@
 
 class Cos;
 
-class Sin : public Expression
+class Sin final : public Expression
 {
 public:
     explicit Sin(std::shared_ptr<Expression> value) : value_(std::move(value)) {};
@@ -27,6 +27,7 @@ public:
     {
         return "sin(" + value_->tostring() + ")";
     }
+
     double evaluate(double x) const override
     {
         return sin(x);
@@ -41,7 +42,7 @@ private:
     std::shared_ptr<Expression> value_;
 };
 
-class Cos : public Expression
+class Cos final : public Expression
 {
 public:
     explicit Cos(std::shared_ptr<Expression> value): value_(std::move(value)) {};
