@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BinaryExpression.h"
+#include "Number.h"
 
 class Sum : public BinaryExpression
 {
@@ -10,9 +11,20 @@ public:
     {
     }
 
-    std::shared_ptr<Expression> diff() const override
+    std::shared_ptr<Expression> diff(const std::string_view var) const override
     {
-        return std::make_shared<Sum>(lhs_->diff(), rhs_->diff());
+        if (!lhs_->contains_var(var) && !rhs_->contains_var(var)) {
+            return std::make_shared<Number>(0);
+        }
+        auto lhs = lhs_->contains_var(var)
+            ? lhs_ ->diff(var)
+            : std::make_shared<Number>(0);
+
+        auto rhs = rhs_->contains_var(var)
+            ? rhs_->diff(var)
+            : std::make_shared<Number>(0);
+
+        return std::make_shared<Sum>(lhs, rhs);
     }
 
     std::string tostring() const override
@@ -24,5 +36,4 @@ public:
     {
         return lhs_->evaluate(x) + rhs_->evaluate(x);
     }
-
 };

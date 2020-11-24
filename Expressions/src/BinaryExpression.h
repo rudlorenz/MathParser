@@ -11,6 +11,11 @@ public:
         , rhs_(std::move(rhs))
     {}
 
+    bool contains_var(const std::string_view var) const override
+    {
+        return lhs_->contains_var(var) || rhs_->contains_var(var);
+    }
+
 protected:
     std::shared_ptr<Expression> lhs_;
     std::shared_ptr<Expression> rhs_;

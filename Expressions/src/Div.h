@@ -1,8 +1,9 @@
 #pragma once
 
 #include "BinaryExpression.h"
-#include "Sub.h"
 #include "Mul.h"
+#include "Number.h"
+#include "Sub.h"
 
 class Div : public BinaryExpression
 {
@@ -12,19 +13,39 @@ public:
     {
     }
 
-    std::shared_ptr<Expression> diff() const override
+    std::shared_ptr<Expression> diff(const std::string_view var) const override
     {
-        return std::make_shared<Div>(
-            std::make_shared<Sub>(
-                std::make_shared<Mul>(lhs_->diff(), rhs_),
-                std::make_shared<Mul>(lhs_, rhs_->diff())
-            ),
-            std::make_shared<Mul>(rhs_, rhs_));
+        if (lhs_->contains_var(var) && rhs_->contains_var(var)) {
+            return std::make_shared<Div>(
+                std::make_shared<Sub>(
+                    std::make_shared<Mul>(lhs_->diff(var), rhs_),
+                    std::make_shared<Mul>(lhs_, rhs_->diff(var))
+                ),
+                std::make_shared<Mul>(rhs_, rhs_));
+        }
+        // rhs is just a coefficient
+        if (lhs_->contains_var(var) && !rhs_->contains_var(var)) {
+            return std::make_shared<Mul>(
+                std::make_shared<Div>(std::make_shared<Number>(1), rhs_),
+                lhs_->diff(var));
+        }
+        // reciprocal rule
+        if (!lhs_->contains_var(var) && rhs_->contains_var(var)) {
+            return std::make_shared<Sub>(
+                std::make_shared<Number>(0),
+                std::make_shared<Mul>(
+                    lhs_,
+                    std::make_shared<Div>(
+                        rhs_->diff(var),
+                        std::make_shared<Mul>(rhs_, rhs_)
+                )));
+        }
+        return std::make_shared<Number>(0);
     }
 
     std::string tostring() const override
     {
-        return "(" + lhs_->tostring() + " / " + rhs_->tostring() + ")";;
+        return "(" + lhs_->tostring() + " / " + rhs_->tostring() + ")";
     }
 
     double evaluate(double x) const override

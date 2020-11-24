@@ -2,6 +2,7 @@
 
 #include "Expression.h"
 #include "Mul.h"
+#include "Number.h"
 #include "Sub.h"
 
 #include <cmath>
@@ -13,9 +14,12 @@ class Sin : public Expression
 public:
     explicit Sin(std::shared_ptr<Expression> value) : value_(std::move(value)) {};
 
-    std::shared_ptr<Expression> diff() const override
+    std::shared_ptr<Expression> diff(const std::string_view var) const override
     {
-        return std::make_shared<Mul>(value_->diff(), std::make_shared<Cos>(value_));
+        return value_->contains_var(var)
+            ? std::make_shared<Mul>(value_->diff(var), std::make_shared<Cos>(value_));
+            : std::make_shared<Number>(0);
+        }
     }
 
     std::string tostring() const override
@@ -27,6 +31,11 @@ public:
         return sin(x);
     }
 
+    bool contains_var(const std::string_view var) const override
+    {
+        return value_->contains_var(var);
+    }
+
 private:
     std::shared_ptr<Expression> value_;
 };
@@ -36,12 +45,14 @@ class Cos : public Expression
 public:
     explicit Cos(std::shared_ptr<Expression> value): value_(std::move(value)) {};
 
-    std::shared_ptr<Expression> diff() const override
+    std::shared_ptr<Expression> diff(const std::string_view var) const override
     {
-        return std::make_shared<Sum>(
-            value_->diff(),
-            std::make_shared<Sub>(std::make_shared<Number>(0), std::make_shared<Sin>(value_))
-        );
+        return value_->contains_var(var)
+            ? std::make_shared<Sum>(
+                value_->diff(var),
+                std::make_shared<Sub>(std::make_shared<Number>(0), std::make_shared<Sin>(value_))
+            );
+            : return std::make_shared<Number>(0);
     }
 
     std::string tostring() const override
@@ -52,6 +63,11 @@ public:
     double evaluate(double x) const override
     {
         return cos(x);
+    }
+
+    bool contains_var(const std::string_view var) const override
+    {
+        return value_->contains_var(var);
     }
 
 

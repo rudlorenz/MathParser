@@ -8,7 +8,7 @@ public:
     Number() : value_() {};
     explicit Number(const int& value) : value_(value) {};
 
-    std::shared_ptr<Expression> diff() const override
+    std::shared_ptr<Expression> diff(const std::string_view) const override
     {
         return std::make_shared<Number>(0);
     }
@@ -21,6 +21,11 @@ public:
     double evaluate(double) const override
     {
         return value_;
+    }
+
+    bool contains_var(const std::string_view) const override
+    {
+        return false;
     }
 
 private:
