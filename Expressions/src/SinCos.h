@@ -13,13 +13,15 @@ class Cos;
 class Sin final : public Expression
 {
 public:
-    explicit Sin(std::shared_ptr<Expression> value) : value_(std::move(value)) {};
+    Sin(std::shared_ptr<Expression> value) : value_(std::move(value)) {};
 
     std::shared_ptr<Expression> diff(const std::string_view var) const override
     {
-        return value_->contains_var(var)
-            ? std::make_shared<Mul>(value_->diff(var), std::make_shared<Cos>(value_));
-            : std::make_shared<Number>(0);
+        if (value_->contains_var(var)) {
+            return std::make_shared<Mul>(value_->diff(var), std::make_shared<Cos>(value_));
+        }
+        else {
+            return std::make_shared<Number>(0);
         }
     }
 
@@ -45,16 +47,19 @@ private:
 class Cos final : public Expression
 {
 public:
-    explicit Cos(std::shared_ptr<Expression> value): value_(std::move(value)) {};
+    Cos(std::shared_ptr<Expression> value): value_(std::move(value)) {};
 
     std::shared_ptr<Expression> diff(const std::string_view var) const override
     {
-        return value_->contains_var(var)
-            ? std::make_shared<Sum>(
-                value_->diff(var),
-                std::make_shared<Negate>(std::make_shared<Sin>(value_))
-            );
-            : return std::make_shared<Number>(0);
+        if (value_->contains_var(var))
+        {
+            return std::make_shared<Sum>(
+            value_->diff(var),
+            std::make_shared<Negate>(std::make_shared<Sin>(value_)));
+        }
+        else {
+            return std::make_shared<Number>(0);
+        }
     }
 
     std::string tostring() const override
