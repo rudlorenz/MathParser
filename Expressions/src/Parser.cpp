@@ -1,5 +1,6 @@
 #include "Parser.h"
 
+#include "SinCos.h"
 #include "Sum.h"
 #include "Sub.h"
 #include "Mul.h"
@@ -56,6 +57,8 @@ TokenType token_operator_type(const std::string& token)
     if (token == "/") return TokenType::div;
     if (token == "*") return TokenType::mul;
     if (token == "-/u") return TokenType::negate;
+    if (token == "sin") return TokenType::sin;
+    if (token == "cos") return TokenType::cos;
 
     return TokenType::err;
 }
@@ -91,6 +94,8 @@ std::shared_ptr<Expression> function_token_to_expression(TokenType token_type, s
     switch (token_type)
     {
     case TokenType::negate: return std::make_shared<Negate>(std::move(param));
+    case TokenType::sin:    return std::make_shared<Sin>(std::move(param));
+    case TokenType::cos:    return std::make_shared<Cos>(std::move(param));
     default: return nullptr;
     }
 }
@@ -115,6 +120,11 @@ bool is_operator(const std::string& token)
     return (token == "*" || token == "+" || token == "-" || token == "/" || token == "-/u");
 }
 
+bool is_function(const std::string& token)
+{
+    return token == "sin" || token == "cos";
+}
+
 bool is_operator(TokenType type)
 {
     switch (type)
@@ -134,8 +144,12 @@ bool is_unary_or_function(TokenType type)
 {
     switch (type)
     {
-    case TokenType::negate: return true;
-    default: return false;
+    case TokenType::negate:
+    case TokenType::sin:
+    case TokenType::cos:
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -206,6 +220,8 @@ std::vector<ParsedToken> convert_to_reverse_notation(const std::vector<std::stri
         { "*", 2 },
         { "/", 2 },
         {"-/u", 3},
+        {"cos", 3},
+        {"sin", 3},
         { "(", 0 },
         { ")", 0 },
     };
@@ -215,10 +231,10 @@ std::vector<ParsedToken> convert_to_reverse_notation(const std::vector<std::stri
         if (is_number(token)) {
             result.emplace_back(ParsedToken{ TokenType::number, token });
         }
-        else if (is_variable(token)) {
+        else if (is_variable(token) && !is_function(token)) {
             result.emplace_back(ParsedToken{ TokenType::variable, token });
         }
-        else if (is_operator(token) || is_parenthesis(token))
+        else if (is_operator(token) || is_parenthesis(token) || is_function(token))
         {
             if (!is_open_par(token))
             {
@@ -266,7 +282,6 @@ std::shared_ptr<Expression> parse(std::string input)
     input.erase(std::remove_if(input.begin(), input.end(), ::isspace), input.end());
 
     //!todo check for balanced brackets
-    //!todo sin and cos parsing
     auto tokens = convert_to_reverse_notation(splice_to_tokens(input));
 
     Stack<std::shared_ptr<Expression>> temp;
