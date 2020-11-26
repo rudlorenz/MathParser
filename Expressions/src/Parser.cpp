@@ -24,6 +24,7 @@ enum class TokenType
     cos,
     number,
     variable,
+    negate,
     err,
 };
 
@@ -54,6 +55,7 @@ TokenType token_operator_type(const std::string& token)
     if (token == "-") return TokenType::sub;
     if (token == "/") return TokenType::div;
     if (token == "*") return TokenType::mul;
+    if (token == "-/u") return TokenType::negate;
 
     return TokenType::err;
 }
@@ -69,6 +71,7 @@ std::string toktostring(const ParsedToken& token) {
     case TokenType::cos: return std::string("cos");
     case TokenType::number: return std::string("num ") + token.value;
     case TokenType::variable: return std::string("var ") + token.value;
+    case TokenType::negate: return std::string("neg");
     default: return std::string("error");
     }
 }
@@ -83,12 +86,21 @@ std::shared_ptr<Expression> token_to_expression(const ParsedToken& token)
     }
 }
 
+std::shared_ptr<Expression> function_token_to_expression(TokenType token_type, std::shared_ptr<Expression> param)
+{
+    switch (token_type)
+    {
+    case TokenType::negate: return std::make_shared<Negate>(std::move(param));
+    default: return nullptr;
+    }
+}
+
 std::shared_ptr<Expression> token_to_expression(
-    const ParsedToken& token,
+    TokenType token_type,
     const std::shared_ptr<Expression>& lhs,
     const std::shared_ptr<Expression>& rhs)
 {
-    switch (token.type)
+    switch (token_type)
     {
     case TokenType::sum: return std::make_shared<Sum>(lhs, rhs);
     case TokenType::sub: return std::make_shared<Sub>(lhs, rhs);
@@ -100,7 +112,7 @@ std::shared_ptr<Expression> token_to_expression(
 
 bool is_operator(const std::string& token)
 {
-    return (token == "*" || token == "+" || token == "-" || token == "/");
+    return (token == "*" || token == "+" || token == "-" || token == "/" || token == "-/u");
 }
 
 bool is_operator(TokenType type)
@@ -111,9 +123,19 @@ bool is_operator(TokenType type)
     case TokenType::sub:
     case TokenType::div:
     case TokenType::mul:
+    case TokenType::negate:
         return true;
     default:
         return false;
+    }
+}
+
+bool is_unary_or_function(TokenType type)
+{
+    switch (type)
+    {
+    case TokenType::negate: return true;
+    default: return false;
     }
 }
 
@@ -147,25 +169,26 @@ bool is_parenthesis(const std::string& token)
 
 std::vector<std::string> splice_to_tokens(const std::string& input)
 {
-    const auto delimiters = "+-*/()";
+    constexpr auto delimiters = "+-*/()";
 
     std::vector<std::string> result;
     std::size_t prev = 0, pos;
 
     while ((pos = input.find_first_of(delimiters, prev)) != std::string::npos)
     {
-        if (pos > prev)
-        {
-            auto token = input.substr(prev, pos - prev);
-            token.erase(std::remove_if(token.begin(), token.end(), ::isspace), token.end());
-            result.emplace_back(token);
+        if (pos > prev) {
+            result.emplace_back(input.substr(prev, pos - prev));
         }
-        result.emplace_back(input.substr(pos, 1));
+        auto op_token = input.substr(pos, 1);
+        // unary minus can be at the start of the expression so better check if result is empty
+        if (op_token == "-" && (result.empty() || (!is_number(result.back()) && !is_variable(result.back())))) {
+            op_token = std::string{"-/u"};
+        }
+        result.emplace_back(op_token);
         prev = pos + 1;
     }
-    if (prev != std::string::npos)
-    {
-        result.emplace_back(input.substr(prev, std::string::npos));
+    if (prev != input.length()) {
+        result.emplace_back(input.substr(prev));
     }
 
     return result;
@@ -182,6 +205,7 @@ std::vector<ParsedToken> convert_to_reverse_notation(const std::vector<std::stri
         { "-", 1 },
         { "*", 2 },
         { "/", 2 },
+        {"-/u", 3},
         { "(", 0 },
         { ")", 0 },
     };
@@ -209,7 +233,7 @@ std::vector<ParsedToken> convert_to_reverse_notation(const std::vector<std::stri
                     result.emplace_back(ParsedToken{ token_operator_type(stack_top), stack_top });
                 }
 
-                if (is_close_par(token) ) {
+                if (is_close_par(token) && !stack.empty()) {
                     stack.pop();
                 }
             }
@@ -250,11 +274,14 @@ std::shared_ptr<Expression> parse(std::string input)
 
     for (auto& token : tokens)
     {
-        if (is_operator(token.type) && temp.size() >= 2)
+        if (is_unary_or_function(token.type)) {
+            temp.push(function_token_to_expression(token.type, temp.pop()));
+        }
+        else if (is_operator(token.type) && temp.size() >= 2)
         {
             auto rhs = temp.pop();
             auto lhs = temp.pop();
-            temp.push(token_to_expression(token, lhs, rhs));
+            temp.push(token_to_expression(token.type, lhs, rhs));
         }
         else {
             temp.push(token_to_expression(token));

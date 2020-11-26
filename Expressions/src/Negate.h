@@ -14,7 +14,7 @@ public:
 
     std::string tostring() const override
     {
-        return "--" + expr_->tostring();
+        return "-" + expr_->tostring();
     }
 
     double evaluate(double x) const override

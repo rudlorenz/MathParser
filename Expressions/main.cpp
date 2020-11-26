@@ -7,7 +7,7 @@
 
 int main()
 {
-    std::string input = "(a + b * c) / 10";
+    std::string input = "-x*x/y";
     auto result = parse(input);
     if (result == nullptr) {
         std::cout << "Something wrong!";
@@ -16,7 +16,7 @@ int main()
 
     std::cout << input << "\n";
     std::cout << result->tostring() << "\n";
-    std::cout << result->diff()->tostring() << std::endl;
+    std::cout << result->diff("x")->tostring() << std::endl;
 
     return 0;
 }
