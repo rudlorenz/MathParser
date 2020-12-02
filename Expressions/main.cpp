@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <iostream>
 
 #include "Expression.h"
@@ -8,7 +7,7 @@
 int main()
 {
     std::string input = "-x*x/y";
-    auto result = parse(input);
+    auto result = parser::parse(input);
     if (result == nullptr) {
         std::cout << "Something wrong!";
         return 0;

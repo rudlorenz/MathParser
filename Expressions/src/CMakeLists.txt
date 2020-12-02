@@ -8,7 +8,7 @@ add_library(expressions)
 target_sources(
         expressions
         PRIVATE
-            Parser.cpp
+            Parser.cpp ParserInternal.h ParserInternal.cpp Stack.h
         PUBLIC
             ${CMAKE_CURRENT_LIST_DIR}/Expression.h ${CMAKE_CURRENT_LIST_DIR}/Number.h
             ${CMAKE_CURRENT_LIST_DIR}/Variable.h ${CMAKE_CURRENT_LIST_DIR}/BinaryExpression.h
