@@ -3,15 +3,6 @@
 #include "ParserInternal.h"
 #include "Stack.h"
 
-#include "SinCos.h"
-#include "Sum.h"
-#include "Sub.h"
-#include "Mul.h"
-#include "Div.h"
-#include "Number.h"
-#include "Variable.h"
-
-#include <cctype>
 #include <unordered_map>
 
 namespace parser

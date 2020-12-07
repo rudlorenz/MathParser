@@ -8,13 +8,10 @@ add_library(expressions)
 target_sources(
         expressions
         PRIVATE
-            Parser.cpp ParserInternal.h ParserInternal.cpp Stack.h
+            Parser.cpp ParserInternal.h ParserInternal.cpp Stack.h Number.h Variable.h BinaryExpression.h Sum.h Sub.h
+            Mul.h Div.h SinCos.h Negate.h
         PUBLIC
-            ${CMAKE_CURRENT_LIST_DIR}/Expression.h ${CMAKE_CURRENT_LIST_DIR}/Number.h
-            ${CMAKE_CURRENT_LIST_DIR}/Variable.h ${CMAKE_CURRENT_LIST_DIR}/BinaryExpression.h
-            ${CMAKE_CURRENT_LIST_DIR}/Sum.h ${CMAKE_CURRENT_LIST_DIR}/Sub.h ${CMAKE_CURRENT_LIST_DIR}/Mul.h
-            ${CMAKE_CURRENT_LIST_DIR}/Div.h ${CMAKE_CURRENT_LIST_DIR}/SinCos.h ${CMAKE_CURRENT_LIST_DIR}/Parser.h
-            ${CMAKE_CURRENT_LIST_DIR}/Negate.h
+            Expression.h Parser.h Expressions.h
 )
 
 target_include_directories(
@@ -27,8 +24,8 @@ target_compile_features(expressions PUBLIC cxx_std_20)
 target_compile_options(expressions PRIVATE
         $<$<CONFIG:Debug>:
             $<$<CXX_COMPILER_ID:Clang>: -Wall -Wextra -Wshadow -Wpedantic -fno-omit-frame-pointer -g -fno-limit-debug-info
-                -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -Wdouble-promotion -Weffc++ -fsanitize=address>
+                -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -Wdouble-promotion -Weffc++>
             $<$<CXX_COMPILER_ID:GNU>: -Wall -Wextra -pedantic -Wshadow -Weffc++ -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -g>>)
 
 target_link_options(expressions PRIVATE
-        $<$<CONFIG:Debug>: -fno-omit-frame-pointer -fsanitize=address>)
+        $<$<CONFIG:Debug>: -fno-omit-frame-pointer>)
