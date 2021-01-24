@@ -1,8 +1,8 @@
-#include "gtest/gtest.h"
-
 #include "Expression.h"
-#include "Variable.h"
 #include "Parser.h"
+#include "Variable.h"
+
+#include "gtest/gtest.h"
 
 TEST(BasicTests, CreateTest)
 {

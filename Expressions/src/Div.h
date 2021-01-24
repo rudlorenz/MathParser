@@ -10,12 +10,10 @@ class Div final : public BinaryExpression
 {
 public:
     Div(std::shared_ptr<Expression> lhs, std::shared_ptr<Expression> rhs)
-        : BinaryExpression(std::move(lhs), std::move(rhs))
-    {
-    }
+        : BinaryExpression(std::move(lhs), std::move(rhs)) {}
 
-    std::shared_ptr<Expression> diff(const std::string_view var) const override
-    {
+    std::shared_ptr<Expression> diff(const std::string_view var) const override {
+        // clang-format off
         if (lhs_->contains_var(var) && rhs_->contains_var(var)) {
             return std::make_shared<Div>(
                 std::make_shared<Sub>(
@@ -40,16 +38,11 @@ public:
                         std::make_shared<Mul>(rhs_, rhs_)
                 )));
         }
+        // clang-format on
         return std::make_shared<Number>(0);
     }
 
-    std::string tostring() const override
-    {
-        return "(" + lhs_->tostring() + " / " + rhs_->tostring() + ")";
-    }
+    std::string tostring() const override { return "(" + lhs_->tostring() + " / " + rhs_->tostring() + ")"; }
 
-    double evaluate(double x) const override
-    {
-        return lhs_->evaluate(x) / rhs_->evaluate(x);
-    }
+    double evaluate(double x) const override { return lhs_->evaluate(x) / rhs_->evaluate(x); }
 };

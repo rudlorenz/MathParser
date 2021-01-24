@@ -1,8 +1,7 @@
-#include <iostream>
-
 #include "Expressions.h"
-
 #include "Parser.h"
+
+#include <iostream>
 
 int main()
 {

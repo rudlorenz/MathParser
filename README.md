@@ -15,8 +15,8 @@ Clone
 https://github.com/rudlorenz/mathParser
 ```
 
-To use Expressions in your project add src folder with `add_subdirectory()` command to your `CmakeLists.txt` file 
-and include `Expressions.h` and `Parser.h` in source files.
+To use Expressions in your project add src folder with `add_subdirectory()` command to your `CmakeLists.txt` file and
+include `Expressions.h` and `Parser.h` in source files.
 
 Alternatively you can use supplied `main.cpp`.
 

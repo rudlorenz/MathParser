@@ -8,12 +8,10 @@ class Mul final : public BinaryExpression
 {
 public:
     Mul(std::shared_ptr<Expression> lhs, std::shared_ptr<Expression> rhs)
-        : BinaryExpression(std::move(lhs), std::move(rhs))
-    {
-    }
+        : BinaryExpression(std::move(lhs), std::move(rhs)) {}
 
-    std::shared_ptr<Expression> diff(const std::string_view var) const override
-    {
+    std::shared_ptr<Expression> diff(const std::string_view var) const override {
+        // clang-format off
         if (lhs_->contains_var(var) && rhs_->contains_var(var)) {
             return std::make_shared<Sum>(
                 std::make_shared<Mul>(lhs_->diff(var), rhs_),
@@ -31,17 +29,11 @@ public:
             ? rhs_->diff(var)
             : rhs_;
 
+        // clang-format on
         return std::make_shared<Mul>(lhs, rhs);
     }
 
-    std::string tostring() const override
-    {
-        return "(" + lhs_->tostring() + " * " + rhs_->tostring() + ")";
-    }
+    std::string tostring() const override { return "(" + lhs_->tostring() + " * " + rhs_->tostring() + ")"; }
 
-    double evaluate(double x) const override
-    {
-        return lhs_->evaluate(x) * rhs_->evaluate(x);
-    }
-
+    double evaluate(double x) const override { return lhs_->evaluate(x) * rhs_->evaluate(x); }
 };
