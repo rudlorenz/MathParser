@@ -88,7 +88,10 @@ std::vector<std::string> splice_to_tokens(const std::string& input)
         }
         auto op_token = input.substr(pos, 1);
         // unary minus can be at the start of the expression so better check if result is empty
-        if (op_token == "-" && (result.empty() || (!is_number(result.back()) && !is_variable(result.back())))) {
+        if (op_token == "-"
+            && (result.empty()
+                || (!is_number(result.back()) && !is_variable(result.back()) && !is_function(result.back())
+                    && !is_close_par(result.back())))) {
             op_token = std::string {"-/u"};
         }
         result.emplace_back(op_token);
