@@ -17,9 +17,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 
-add_executable(expression_tests basic_tests.cpp)
+add_executable(expression_tests basic_tests.cpp LexerTests.cpp ReverseNotationTests.cpp)
 
-target_link_libraries(expression_tests gtest gtest_main)
+target_link_libraries(expression_tests gtest gtest_main gmock)
 target_link_libraries(expression_tests expressions)
 
 gtest_discover_tests(expression_tests)
