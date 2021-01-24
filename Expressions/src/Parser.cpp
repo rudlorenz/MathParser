@@ -5,29 +5,15 @@
 
 #include <unordered_map>
 
-namespace parser
+namespace parser 
 {
-namespace internal
+namespace internal 
 {
-inline namespace
+inline namespace 
 {
 
-std::string toktostring(const internal::ParsedToken& token) {
-    switch (token.type) {
-    case TokenType::sum: return std::string("+");
-    case TokenType::sub: return std::string("-");
-    case TokenType::div: return std::string("/");
-    case TokenType::mul: return std::string("*");
-    case TokenType::sin: return std::string("sin");
-    case TokenType::cos: return std::string("cos");
-    case TokenType::number: return std::string("num ") + token.value;
-    case TokenType::variable: return std::string("var ") + token.value;
-    case TokenType::negate: return std::string("neg");
-    default: return std::string("error");
-    }
-}
-
-std::shared_ptr<Expression> token_to_expression(const ParsedToken& token) {
+std::shared_ptr<Expression> token_to_expression(const ParsedToken& token)
+{
     switch (token.type) {
     case TokenType::number: return std::make_shared<Number>(std::stoi(token.value));
     case TokenType::variable: return std::make_shared<Variable>(token.value);

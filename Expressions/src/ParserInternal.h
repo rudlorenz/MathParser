@@ -24,6 +24,11 @@ struct ParsedToken
 {
     TokenType type;
     std::string value;
+    auto operator<=>(const ParsedToken& p) const = default;
+
+    std::string to_string() const;
+
+    friend std::ostream& operator<<(std::ostream& os, const ParsedToken& tok);
 };
 
 std::vector<std::string> splice_to_tokens(const std::string& input);

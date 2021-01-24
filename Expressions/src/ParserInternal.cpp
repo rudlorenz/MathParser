@@ -7,7 +7,6 @@
 
 namespace parser::internal
 {
-
 inline namespace
 {
 
@@ -55,7 +54,29 @@ bool is_parenthesis(const std::string& token) {
 
 } // namespace
 
-std::vector<std::string> splice_to_tokens(const std::string& input) {
+std::string ParsedToken::to_string() const
+{
+    switch (type) {
+    case TokenType::sum: return std::string("sum");
+    case TokenType::sub: return std::string("sub");
+    case TokenType::div: return std::string("div");
+    case TokenType::mul: return std::string("mul");
+    case TokenType::sin: return std::string("sin");
+    case TokenType::cos: return std::string("cos");
+    case TokenType::number: return std::string("num ") + value;
+    case TokenType::variable: return std::string("var ") + value;
+    case TokenType::negate: return std::string("neg");
+    default: return std::string("error");
+    }
+}
+
+std::ostream& operator<<(std::ostream& os, const ParsedToken& tok)
+{
+    return os << "(" + tok.to_string() + ")";
+}
+
+std::vector<std::string> splice_to_tokens(const std::string& input)
+{
     constexpr auto delimiters = "+-*/()";
 
     std::vector<std::string> result;
