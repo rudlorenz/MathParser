@@ -1,20 +1,21 @@
 #include "Expressions.h"
 #include "Parser.h"
 
-#include <iostream>
+#include "fmt/core.h"
+#include "fmt/format.h"
 
 int main()
 {
     std::string input = "-x*x/y";
     auto result = parser::parse(input);
     if (result == nullptr) {
-        std::cout << "Something wrong!";
+        fmt::print(stderr, "Something wrong!");
         return 0;
     }
 
-    std::cout << input << "\n";
-    std::cout << result->tostring() << "\n";
-    std::cout << result->diff("x")->tostring() << std::endl;
+    fmt::print(stdout, "input : {}\n", input);
+    fmt::print(stdout, "as expressions : {}\n", result->tostring());
+    fmt::print(stdout, "d/dx : {}\n", result->diff("x")->tostring());
 
     return 0;
 }

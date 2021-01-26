@@ -11,7 +11,9 @@ add_subdirectory(src)
 add_subdirectory(tests)
 
 add_executable(expressions_main main.cpp)
-target_link_libraries(expressions_main expressions)
+target_link_libraries(expressions_main
+        PUBLIC expressions
+        PRIVATE fmt::fmt)
 
 target_compile_features(expressions_main PUBLIC cxx_std_20)
 target_compile_options(expressions_main PRIVATE
