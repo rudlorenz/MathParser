@@ -19,10 +19,10 @@ FetchContent_MakeAvailable(fmtlib)
 target_sources(
         expressions
         PRIVATE
-            Parser.cpp ParserInternal.h ParserInternal.cpp Stack.h Number.h Variable.h BinaryExpression.h Sum.h Sub.h
+            Stack.h Number.h Variable.h BinaryExpression.h Sum.h Sub.h
             Mul.h Div.h SinCos.h Negate.h
         PUBLIC
-            Expression.h Parser.h Expressions.h
+            Expression.h Parser.h Expressions.h ParserInternal.h ParserInternal.cpp Parser.cpp
 )
 
 target_include_directories(
