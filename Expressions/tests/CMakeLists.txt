@@ -12,6 +12,8 @@ FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
         GIT_TAG        origin/master
+        GIT_PROGRESS   TRUE
+        USES_TERMINAL_DOWNLOAD TRUE
 )
 
 FetchContent_MakeAvailable(googletest)
