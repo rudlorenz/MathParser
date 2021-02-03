@@ -11,7 +11,8 @@ public:
         return std::make_shared<Negate>(expr_->diff(var));
     }
 
-    std::string tostring() const override { return "-" + expr_->tostring(); }
+    // em dash to represent unary minus.
+    std::string tostring() const override { return "—" + expr_->tostring(); }
 
     double evaluate(double x) const override { return -expr_->evaluate(x); }
 

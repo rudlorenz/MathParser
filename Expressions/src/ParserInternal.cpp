@@ -3,7 +3,7 @@
 #include "Stack.h"
 
 #include <fmt/core.h>
-
+#include <fmt/ostream.h>
 #include <unordered_map>
 
 namespace parser::internal
@@ -24,16 +24,18 @@ TokenType token_operator_type(const std::string& token) {
 }
 
 bool is_operator(const ParsedToken& token) {
-    return token.type == TokenType::sum || token.type == TokenType::sub || token.type == TokenType::mul
-        || token.type == TokenType::div || token.type == TokenType::negate;
+    switch (token.type) {
+        case TokenType::sum:
+        case TokenType::sub:
+        case TokenType::mul:
+        case TokenType::div:
+        case TokenType::negate: return true;
+        default: return false;
+    }
 }
 
 bool is_function(const std::string& token) {
     return token == "sin" || token == "cos";
-}
-
-bool is_function(const ParsedToken& token) {
-    return token.type == TokenType::sin || token.type == TokenType::cos;
 }
 
 bool is_number(const std::string& token) {
@@ -66,8 +68,8 @@ std::shared_ptr<Expression> token_to_expression(const ParsedToken& token) {
     }
 }
 
-std::shared_ptr<Expression> function_token_to_expression(TokenType token_type, std::shared_ptr<Expression> param) {
-    switch (token_type) {
+std::shared_ptr<Expression> function_token_to_expression(const ParsedToken& token, std::shared_ptr<Expression> param) {
+    switch (token.type) {
         case TokenType::negate: return std::make_shared<Negate>(std::move(param));
         case TokenType::sin: return std::make_shared<Sin>(std::move(param));
         case TokenType::cos: return std::make_shared<Cos>(std::move(param));
@@ -76,10 +78,10 @@ std::shared_ptr<Expression> function_token_to_expression(TokenType token_type, s
 }
 
 std::shared_ptr<Expression> token_to_expression(
-    TokenType token_type,
+    const ParsedToken& token,
     const std::shared_ptr<Expression>& lhs,
     const std::shared_ptr<Expression>& rhs) {
-    switch (token_type) {
+    switch (token.type) {
         case TokenType::sum: return std::make_shared<Sum>(lhs, rhs);
         case TokenType::sub: return std::make_shared<Sub>(lhs, rhs);
         case TokenType::div: return std::make_shared<Div>(lhs, rhs);
@@ -88,19 +90,8 @@ std::shared_ptr<Expression> token_to_expression(
     }
 }
 
-bool is_operator(TokenType type) {
-    switch (type) {
-        case TokenType::sum:
-        case TokenType::sub:
-        case TokenType::div:
-        case TokenType::mul:
-        case TokenType::negate: return true;
-        default: return false;
-    }
-}
-
-bool is_unary_or_function(TokenType type) {
-    switch (type) {
+bool is_unary_or_function(const ParsedToken& token) {
+    switch (token.type) {
         case TokenType::negate:
         case TokenType::sin:
         case TokenType::cos: return true;
@@ -109,6 +100,19 @@ bool is_unary_or_function(TokenType type) {
 }
 
 } // namespace
+
+int ParsedToken::priority() const {
+    switch (type) {
+        case TokenType::sum:
+        case TokenType::sub: return 2;
+        case TokenType::mul:
+        case TokenType::div: return 3;
+        case TokenType::negate:
+        case TokenType::sin:
+        case TokenType::cos: return 4;
+        default: return 0;
+    }
+}
 
 std::string ParsedToken::to_string() const {
     switch (type) {
@@ -186,71 +190,24 @@ std::vector<ParsedToken> convert_to_tokens(const std::vector<std::string>& splic
     return result;
 }
 
-// also known as shunting yard algorithm
 std::vector<ParsedToken> convert_to_reverse_notation(const std::vector<ParsedToken>& tokens) {
-    std::vector<ParsedToken> result;
-    result.reserve(tokens.size());
-    Stack<ParsedToken> stack;
+    Recognizer recognizer;
 
-    const std::unordered_map<TokenType, int> OPERATOR_PRIORITY {
-        {TokenType::sum, 1},
-        {TokenType::sub, 1},
-        {TokenType::mul, 2},
-        {TokenType::div, 2},
-        {TokenType::negate, 3},
-        {TokenType::cos, 3},
-        {TokenType::sin, 3},
-        {TokenType::open_par, 0},
-        {TokenType::close_par, 0},
-    };
-
-
-    for (const auto& token : tokens) {
-        if (token.type == TokenType::number || token.type == TokenType::variable) {
-            result.emplace_back(token);
-        } else if (is_operator(token) || is_parenthesis(token) || is_function(token)) {
-            if (token.type != TokenType::open_par) {
-                // pop stack until :
-                // '(' met if current token is ')'
-                // or if op_priority(token) >= op_priority(stack.top)
-                while (!stack.empty()
-                       && ((token.type != TokenType::close_par && stack.top().type != TokenType::open_par)
-                           || (OPERATOR_PRIORITY.at(stack.top().type) > OPERATOR_PRIORITY.at(token.type))))
-                {
-                    result.emplace_back(stack.pop());
-                }
-
-                if (token.type == TokenType::close_par && !stack.empty()) {
-                    stack.pop();
-                }
-            }
-
-            if (token.type != TokenType::close_par) {
-                stack.push(token);
-            }
-        }
-    }
-    while (!stack.empty()) {
-        auto token_from_stack = stack.pop();
-        if (!is_parenthesis(token_from_stack)) {
-            result.emplace_back(token_from_stack);
-        }
-    }
-
-    return result;
+    // slightly modified shunting yard algorithm.
+    return recognizer.recognize_and_convert_to_infix(tokens);
 }
 
 std::shared_ptr<Expression> reverse_notation_to_expression(const std::vector<ParsedToken>& parsed_tokens) {
     Stack<std::shared_ptr<Expression>> temp;
     temp.reserve(parsed_tokens.size());
 
-    for (auto& token : parsed_tokens) {
-        if (is_unary_or_function(token.type)) {
-            temp.push(function_token_to_expression(token.type, temp.pop()));
-        } else if (is_operator(token.type) && temp.size() >= 2) {
+    for (const auto& token : parsed_tokens) {
+        if (is_unary_or_function(token)) {
+            temp.push(function_token_to_expression(token, temp.pop()));
+        } else if (is_operator(token) && temp.size() >= 2) {
             auto rhs = temp.pop();
             auto lhs = temp.pop();
-            temp.push(token_to_expression(token.type, lhs, rhs));
+            temp.push(token_to_expression(token, lhs, rhs));
         } else {
             temp.push(token_to_expression(token));
         }
@@ -258,4 +215,85 @@ std::shared_ptr<Expression> reverse_notation_to_expression(const std::vector<Par
 
     return temp.pop();
 }
+
+std::vector<ParsedToken> Recognizer::recognize_and_convert_to_infix(const std::vector<ParsedToken>& tokens) {
+    parsing_result.clear();
+    stack.clear();
+    parsing_result.reserve(tokens.size());
+
+    auto token_begin = tokens.begin();
+    if (!process_operand(token_begin, tokens.end())) {
+        fmt::print(stderr, "Parsing error! Expr : {}\n", fmt::join(tokens, ", "));
+        --token_begin;
+        fmt::print(stderr, "Error at : {} : {}\n", std::distance(tokens.begin(), token_begin), *token_begin);
+        parsing_result.clear();
+        stack.clear();
+        return std::vector<ParsedToken> {};
+    } else {
+        return parsing_result;
+    }
+}
+
+bool Recognizer::process_operand(auto& token_stream_pos, const auto token_stream_end) {
+    if (token_stream_pos == token_stream_end) {
+        fmt::print(stderr, "Error! Token stream ended abruptly. Expected an operand found nothing.\n");
+        return false;
+    } else {
+        const auto& current_token = *token_stream_pos;
+        if (is_unary_or_function(current_token) || is_parenthesis(current_token)) {
+            stack.push(current_token);
+            return process_operand(++token_stream_pos, token_stream_end);
+        } else if (current_token.type == TokenType::number || current_token.type == TokenType::variable) {
+            parsing_result.emplace_back(current_token);
+            return process_operator(++token_stream_pos, token_stream_end);
+        } else {
+            fmt::print(stderr, "Error! Unexpected token: {}\n", current_token);
+            return false;
+        }
+    }
+}
+
+bool Recognizer::process_operator(auto& token_stream_pos, auto token_stream_end) {
+    if (token_stream_pos == token_stream_end) {
+        while (!stack.empty()) {
+            auto token = stack.pop();
+            if (token.type == TokenType::open_par) {
+                fmt::print(
+                    stderr,
+                    "Error! Found \"(\" while processing operator (emptying the stack). Mismatched parenthesis?\n");
+                return false;
+            }
+            parsing_result.emplace_back(token);
+        }
+        return true;
+    }
+    const auto& current_token = *token_stream_pos;
+    if (current_token.type == TokenType::close_par) {
+        if (stack.empty()) {
+            fmt::print(stderr, "Error processing \")\" Operator stack is empty. Mismatched parenthesis?\n");
+            return false;
+        }
+        while (stack.top().type != TokenType::open_par) {
+            parsing_result.emplace_back(stack.pop());
+            if (stack.empty()) {
+                fmt::print(stderr, "Error processing \")\" Operator stack is empty. Mismatched parenthesis?\n");
+                return false;
+            }
+        }
+        stack.pop();
+        return process_operator(++token_stream_pos, token_stream_end);
+    } else if (is_operator(current_token)) {
+        while (!stack.empty()
+               && (stack.top().type != TokenType::open_par || stack.top().priority() > current_token.priority())) {
+            parsing_result.emplace_back(stack.pop());
+        }
+        stack.push(current_token);
+        return process_operand(++token_stream_pos, token_stream_end);
+    } else {
+        fmt::print(stderr, "Error! Found : {} while processing operator.\n", current_token);
+        return false;
+    }
+}
+
+
 } // namespace parser::internal

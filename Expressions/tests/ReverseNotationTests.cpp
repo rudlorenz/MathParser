@@ -27,29 +27,6 @@ TEST(ReverseNotationTests, TokenRecognition) {
         convert_to_reverse_notation({ParsedToken {TokenType::number, "11"}}),
         ElementsAre(ParsedToken {TokenType::number, "11"}));
 
-    EXPECT_THAT(
-        convert_to_reverse_notation({ParsedToken {TokenType::sum, std::nullopt}}),
-        ElementsAre(ParsedToken {TokenType::sum, std::nullopt}));
-    EXPECT_THAT(
-        convert_to_reverse_notation({ParsedToken {TokenType::sub, std::nullopt}}),
-        ElementsAre(ParsedToken {TokenType::sub, std::nullopt}));
-    EXPECT_THAT(
-        convert_to_reverse_notation({ParsedToken {TokenType::div, std::nullopt}}),
-        ElementsAre(ParsedToken {TokenType::div, std::nullopt}));
-    EXPECT_THAT(
-        convert_to_reverse_notation({ParsedToken {TokenType::mul, std::nullopt}}),
-        ElementsAre(ParsedToken {TokenType::mul, std::nullopt}));
-
-    EXPECT_THAT(
-        convert_to_reverse_notation({ParsedToken {TokenType::negate, std::nullopt}}),
-        ElementsAre(ParsedToken {TokenType::negate, std::nullopt}));
-    EXPECT_THAT(
-        convert_to_reverse_notation({ParsedToken {TokenType::sin, std::nullopt}}),
-        ElementsAre(ParsedToken {TokenType::sin, std::nullopt}));
-    EXPECT_THAT(
-        convert_to_reverse_notation({ParsedToken {TokenType::cos, std::nullopt}}),
-        ElementsAre(ParsedToken {TokenType::cos, std::nullopt}));
-
     EXPECT_THAT(convert_to_reverse_notation({ParsedToken {TokenType::open_par, std::nullopt}}), ElementsAre());
     EXPECT_THAT(convert_to_reverse_notation({ParsedToken {TokenType::close_par, std::nullopt}}), ElementsAre());
 }
