@@ -44,5 +44,7 @@ public:
 
     std::string to_string() const override { return fmt::format("({} / {})", lhs_->to_string(), rhs_->to_string()); }
 
+    std::string to_expr_string() const override { return fmt::format("div({}, {})", lhs_->to_expr_string(), rhs_->to_expr_string()); }
+
     double evaluate(double x) const override { return lhs_->evaluate(x) / rhs_->evaluate(x); }
 };

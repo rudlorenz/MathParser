@@ -15,6 +15,8 @@ public:
 
     std::string to_string() const override { return name_; }
 
+    std::string to_expr_string() const override { return fmt::format("var({})", name_); }
+
     double evaluate(double x) const override { return x; }
 
     bool contains_var(const std::string_view var) const override { return name_ == var; }

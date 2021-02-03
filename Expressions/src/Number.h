@@ -12,6 +12,8 @@ public:
 
     std::string to_string() const override { return fmt::format("{}", value_); }
 
+    std::string to_expr_string() const override { return fmt::format("Num({})", value_); }
+
     double evaluate(double) const override { return value_; }
 
     bool contains_var(const std::string_view) const override { return false; }

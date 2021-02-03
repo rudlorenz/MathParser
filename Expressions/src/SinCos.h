@@ -25,6 +25,8 @@ public:
 
     std::string to_string() const override { return fmt::format("sin({})", value_->to_string()); }
 
+    std::string to_expr_string() const override { return fmt::format("sin({})", value_->to_expr_string()); }
+
     double evaluate(double x) const override { return sin(x); }
 
     bool contains_var(const std::string_view var) const override { return value_->contains_var(var); }
@@ -47,6 +49,8 @@ public:
     }
 
     std::string to_string() const override { return fmt::format("cos({})", value_->to_string()); }
+
+    std::string to_expr_string() const override { return fmt::format("cos({})", value_->to_expr_string()); }
 
     double evaluate(double x) const override { return cos(x); }
 
