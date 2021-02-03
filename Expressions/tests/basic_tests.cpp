@@ -6,5 +6,5 @@
 
 TEST(BasicTests, CreateTest) {
     auto var = parser::parse("a");
-    ASSERT_STREQ(var->tostring().c_str(), "a");
+    ASSERT_STREQ(var->to_string().c_str(), "a");
 }

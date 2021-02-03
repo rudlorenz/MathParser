@@ -23,7 +23,7 @@ public:
         }
     }
 
-    std::string tostring() const override { return "sin(" + value_->tostring() + ")"; }
+    std::string to_string() const override { return fmt::format("sin({})", value_->to_string()); }
 
     double evaluate(double x) const override { return sin(x); }
 
@@ -46,7 +46,7 @@ public:
         }
     }
 
-    std::string tostring() const override { return "cos(" + value_->tostring() + ")"; }
+    std::string to_string() const override { return fmt::format("cos({})", value_->to_string()); }
 
     double evaluate(double x) const override { return cos(x); }
 

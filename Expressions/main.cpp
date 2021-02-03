@@ -13,8 +13,8 @@ int main()
     }
 
     fmt::print(stdout, "input : {}\n", input);
-    fmt::print(stdout, "as expressions : {}\n", result->tostring());
-    fmt::print(stdout, "d/dx : {}\n", result->diff("x")->tostring());
+    fmt::print(stdout, "as expressions : {}\n", result->to_string());
+    fmt::print(stdout, "d/dx : {}\n", result->diff("x")->to_string());
 
     return 0;
 }

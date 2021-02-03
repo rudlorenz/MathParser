@@ -12,7 +12,7 @@ public:
     }
 
     // em dash to represent unary minus.
-    std::string tostring() const override { return "—" + expr_->tostring(); }
+    std::string to_string() const override { return fmt::format("—{}", expr_->to_string()); }
 
     double evaluate(double x) const override { return -expr_->evaluate(x); }
 

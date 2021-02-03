@@ -10,7 +10,7 @@ public:
 
     std::shared_ptr<Expression> diff(const std::string_view) const override { return std::make_shared<Number>(0); }
 
-    std::string tostring() const override { return std::to_string(value_); }
+    std::string to_string() const override { return fmt::format("{}", value_); }
 
     double evaluate(double) const override { return value_; }
 

@@ -29,7 +29,7 @@ Parsing expression from string:
 
 auto result = parser::parse("x + y");
 if (result != nullptr) {
-    std::cout << "result : " << result->tostring();
+    std::cout << "result : " << result->to_string();
 }
 ```
 
@@ -42,8 +42,8 @@ auto result = parser::parse("x * x + 2*x + 10");
 if (result != nullptr)
 {
     auto derivative = result->diff("x");
-    std::cout << "expression : " << result->tostring() << "\n"
-        << "derivative : " << derivative->tostring(); 
+    std::cout << "expression : " << result->to_string() << "\n"
+        << "derivative : " << derivative->to_string(); 
 }
 ```
 
@@ -52,7 +52,7 @@ Calls are chainable:
 ```c++
 auto result = parser::parse("x*x*y + x*y*y");
 auto as_string = result != nullptr
-    ? result->diff(x)->diff(y)->tostring();
+    ? result->diff(x)->diff(y)->to_string();
 ```
 
 You can create expressions directly, but it's highly discouraged:
