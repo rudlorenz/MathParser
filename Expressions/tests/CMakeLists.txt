@@ -3,6 +3,7 @@ project(Expressions_tests)
 
 set(CMAKE_CXX_STANDARD 20)
 
+option(FETCHCONTENT_QUIET FALSE)
 
 include(CTest)
 include(FetchContent)

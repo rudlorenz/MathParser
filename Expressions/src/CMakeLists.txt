@@ -3,6 +3,8 @@ project(Expressions)
 
 set(CMAKE_CXX_STANDARD 20)
 
+option(FETCHCONTENT_QUIET FALSE)
+
 add_library(expressions)
 
 include(FetchContent)

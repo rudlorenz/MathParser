@@ -11,7 +11,13 @@ public:
     Variable() : name_() {};
     explicit Variable(std::string name) : name_(std::move(name)) {};
 
-    std::shared_ptr<Expression> diff(const std::string_view) const override { return std::make_shared<Number>(1); }
+    std::shared_ptr<Expression> diff(const std::string_view name) const override {
+        if (name_ == name) {
+            return std::make_shared<Number>(1);
+        } else {
+            return std::make_shared<Number>(0);
+        };
+    }
 
     std::string to_string() const override { return name_; }
 
