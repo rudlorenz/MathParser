@@ -8,6 +8,11 @@
 
 namespace parser::internal
 {
+
+using mexpr::Expression;
+using mexpr::unary_expr_type;
+using mexpr::binary_expr_type;
+
 inline namespace
 {
 
@@ -60,33 +65,39 @@ bool is_parenthesis(const ParsedToken& token) {
     return token.type == TokenType::open_par || token.type == TokenType::close_par;
 }
 
-std::shared_ptr<Expression> token_to_expression(const ParsedToken& token) {
+Expression token_to_expression(const ParsedToken& token) {
     switch (token.type) {
-        case TokenType::number: return std::make_shared<Number>(std::stoi(token.value.value()));
-        case TokenType::variable: return std::make_shared<Variable>(token.value.value());
-        default: return nullptr;
+        case TokenType::number: return Expression{std::stoi(token.value.value())};
+        case TokenType::variable: return Expression{token.value.value()};
+        default:{
+            fmt::format("Error converting value token. Unexpected token : {}", token);
+            return Expression{"ERR"};
+        }
     }
 }
 
-std::shared_ptr<Expression> function_token_to_expression(const ParsedToken& token, std::shared_ptr<Expression> param) {
+Expression function_token_to_expression(const ParsedToken& token, Expression&& param) {
     switch (token.type) {
-        case TokenType::negate: return std::make_shared<Negate>(std::move(param));
-        case TokenType::sin: return std::make_shared<Sin>(std::move(param));
-        case TokenType::cos: return std::make_shared<Cos>(std::move(param));
-        default: return nullptr;
+        case TokenType::negate: return Expression{unary_expr_type::unary_minus, std::move(param)};
+        case TokenType::sin: return Expression{unary_expr_type::sin, std::move(param)};
+        case TokenType::cos: return Expression{unary_expr_type::cos, std::move(param)};
+        default:{
+            fmt::format("Error converting unary / function token. Unexpected token : {}", token);
+            return Expression{"ERR"};
+        }
     }
 }
 
-std::shared_ptr<Expression> token_to_expression(
-    const ParsedToken& token,
-    const std::shared_ptr<Expression>& lhs,
-    const std::shared_ptr<Expression>& rhs) {
+Expression token_to_expression(const ParsedToken& token, Expression&& lhs, Expression&& rhs) {
     switch (token.type) {
-        case TokenType::sum: return std::make_shared<Sum>(lhs, rhs);
-        case TokenType::sub: return std::make_shared<Sub>(lhs, rhs);
-        case TokenType::div: return std::make_shared<Div>(lhs, rhs);
-        case TokenType::mul: return std::make_shared<Mul>(lhs, rhs);
-        default: return nullptr;
+        case TokenType::sum: return Expression{binary_expr_type::sum, std::move(lhs), std::move(rhs)};
+        case TokenType::sub: return Expression{binary_expr_type::sub, std::move(lhs), std::move(rhs)};
+        case TokenType::div: return Expression{binary_expr_type::div, std::move(lhs), std::move(rhs)};
+        case TokenType::mul: return Expression{binary_expr_type::mul, std::move(lhs), std::move(rhs)};
+        default:{
+            fmt::format("Error converting operator token. Unexpected token : {}", token);
+            return Expression{"ERR"};
+        }
     }
 }
 
@@ -263,23 +274,28 @@ std::vector<ParsedToken> convert_to_reverse_notation(const std::vector<ParsedTok
     return result;
 }
 
-std::shared_ptr<Expression> reverse_notation_to_expression(const std::vector<ParsedToken>& parsed_tokens) {
-    Stack<std::shared_ptr<Expression>> temp;
+Expression reverse_notation_to_expression(const std::vector<ParsedToken>& parsed_tokens) {
+    std::vector<Expression> temp;
     temp.reserve(parsed_tokens.size());
 
-    for (const auto& token : parsed_tokens) {
+    // Expression is non-copyable :(
+    for (auto&& token : parsed_tokens) {
         if (is_unary_or_function(token)) {
-            temp.push(function_token_to_expression(token, temp.pop()));
+            auto last = std::move(temp[temp.size() - 1]);
+            temp.pop_back();
+            temp.emplace_back(function_token_to_expression(token, std::move(last)));
         } else if (is_operator(token) && temp.size() >= 2) {
-            auto rhs = temp.pop();
-            auto lhs = temp.pop();
-            temp.push(token_to_expression(token, lhs, rhs));
+            auto rhs = std::move(temp[temp.size() - 1]);
+            temp.pop_back();
+            auto lhs = std::move(temp[temp.size() - 1]);
+            temp.pop_back();
+            temp.emplace_back(token_to_expression(token, std::move(lhs), std::move(rhs)));
         } else {
-            temp.push(token_to_expression(token));
+            temp.emplace_back(token_to_expression(token));
         }
     }
-
-    return temp.pop();
+    auto result = std::move(temp[0]);
+    return result;
 }
 
 } // namespace parser::internal
