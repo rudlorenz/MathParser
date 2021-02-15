@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Expressions.h"
+#include "Expression.h"
 #include "Stack.h"
 
 #include <optional>
@@ -43,6 +43,6 @@ public:
 std::vector<std::string> splice_string(const std::string& input);
 std::vector<ParsedToken> convert_to_tokens(const std::vector<std::string>& spliced);
 std::vector<ParsedToken> convert_to_reverse_notation(const std::vector<ParsedToken>& tokens);
-std::shared_ptr<Expression> reverse_notation_to_expression(const std::vector<ParsedToken>& parsed_tokens);
+mexpr::Expression reverse_notation_to_expression(const std::vector<ParsedToken>& parsed_tokens);
 
 } // namespace parser::internal

@@ -1,14 +1,13 @@
 #pragma once
 
-#include "Expressions.h"
+#include "Expression.h"
 
-#include <memory>
 #include <string>
-#include <vector>
+#include <optional>
 
 namespace parser
 {
 
-std::shared_ptr<Expression> parse(std::string input);
+std::optional<mexpr::Expression> parse(std::string input);
 
 } // namespace parser
