@@ -7,7 +7,7 @@
 using namespace testing;
 using namespace parser::internal;
 
-TEST(LexerTest, VariableParsing) {
+TEST(LexerTests, VariableParsing) {
     EXPECT_THAT(splice_string("a"), ElementsAre("a"));
     EXPECT_THAT(splice_string("ab"), ElementsAre("ab"));
     EXPECT_THAT(splice_string("abc"), ElementsAre("abc"));
@@ -20,7 +20,7 @@ TEST(LexerTest, VariableParsing) {
     EXPECT_THAT(splice_string("111"), ElementsAre("111"));
 }
 
-TEST(LexerTest, OperationParsing) {
+TEST(LexerTests, OperationParsing) {
     EXPECT_THAT(splice_string("+"), ElementsAre("+"));
     EXPECT_THAT(splice_string("-"), ElementsAre("-/u"));
     EXPECT_THAT(splice_string("/"), ElementsAre("/"));
@@ -32,7 +32,7 @@ TEST(LexerTest, OperationParsing) {
     EXPECT_THAT(splice_string("+*"), ElementsAre("+", "*"));
 }
 
-TEST(LexerTest, UnaryMinusParsing) {
+TEST(LexerTests, UnaryMinusParsing) {
     EXPECT_THAT(splice_string("-"), ElementsAre("-/u"));
     EXPECT_THAT(splice_string("--"), ElementsAre("-/u", "-/u"));
     EXPECT_THAT(splice_string("---"), ElementsAre("-/u", "-/u", "-/u"));
@@ -58,7 +58,7 @@ TEST(LexerTest, UnaryMinusParsing) {
     EXPECT_THAT(splice_string("cos-"), ElementsAre("cos", "-"));
 }
 
-TEST(LexerTest, ExprParsing) {
+TEST(LexerTests, ExprParsing) {
     EXPECT_THAT(splice_string("a+a"), ElementsAre("a", "+", "a"));
     EXPECT_THAT(splice_string("a+1"), ElementsAre("a", "+", "1"));
     EXPECT_THAT(splice_string("1+a"), ElementsAre("1", "+", "a"));
