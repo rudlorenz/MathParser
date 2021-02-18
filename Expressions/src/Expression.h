@@ -44,6 +44,10 @@ public:
     Expression(binary_expr_type expr_type, std::unique_ptr<Expression> lhs, std::unique_ptr<Expression> rhs);
     Expression(binary_expr_type expr_type, Expression&& lhs, Expression&& rhs);
 
+    bool operator==(const Expression& other) const;
+    bool operator!=(const Expression& other) const;
+
+public:
     [[nodiscard]] Expression clone() const;
     [[nodiscard]] Expression diff(std::string_view var) const;
 
