@@ -257,4 +257,36 @@ bool Expression::contains_var(const std::string_view var) const {
             }},
         value_);
 }
+
+
+bool Expression::operator==(const Expression& other) const {
+    return std::visit(
+        overload_lambda {
+            [](const int lhs, const int rhs) { return lhs == rhs; },
+            [](const std::string& lhs, const std::string& rhs) { return lhs == rhs; },
+            [](const unary_expr& lhs, const unary_expr& rhs) {
+                const auto& [lhs_type, lhs_value] = lhs;
+                const auto& [rhs_type, rhs_value] = rhs;
+                return lhs_type == rhs_type and (*lhs_value) == (*rhs_value);
+            },
+            [](const binary_expr& lhs, const binary_expr& rhs) {
+                const auto& [lhs_type, lhs_left_value, lhs_right_value] = lhs;
+                const auto& [rhs_type, rhs_left_value, rhs_right_value] = rhs;
+                return lhs_type == rhs_type                    //
+                    and (*lhs_left_value) == (*rhs_left_value) //
+                    and (*lhs_right_value) == (*rhs_right_value);
+            },
+            [](const auto&, const auto&) {
+                // if lhs and rhs have different variant types.
+                return false;
+            }},
+        value_,
+        other.value_);
+}
+
+
+bool Expression::operator!=(const Expression& other) const {
+    return not (*this == other);
+}
+
 } // namespace mexpr
