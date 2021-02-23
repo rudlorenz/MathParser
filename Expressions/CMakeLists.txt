@@ -15,6 +15,8 @@ target_link_libraries(expressions_main
         PUBLIC expressions
         PRIVATE fmt::fmt)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 target_compile_features(expressions_main PUBLIC cxx_std_20)
 target_compile_options(expressions_main PRIVATE
         $<$<CONFIG:Debug>:
