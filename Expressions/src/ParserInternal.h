@@ -40,20 +40,6 @@ public:
     std::optional<std::string> value;
 };
 
-class Recognizer
-{
-public:
-    std::vector<ParsedToken> recognize_and_convert_to_infix(const std::vector<ParsedToken>& tokens);
-
-private:
-    bool process_operand(auto& token_stream_pos, auto token_stream_end);
-    bool process_operator(auto& token_stream_pos, auto token_stream_end);
-
-private:
-    std::vector<ParsedToken> parsing_result;
-    Stack<ParsedToken> stack;
-};
-
 std::vector<std::string> splice_string(const std::string& input);
 std::vector<ParsedToken> convert_to_tokens(const std::vector<std::string>& spliced);
 std::vector<ParsedToken> convert_to_reverse_notation(const std::vector<ParsedToken>& tokens);
