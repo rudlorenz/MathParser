@@ -191,10 +191,76 @@ std::vector<ParsedToken> convert_to_tokens(const std::vector<std::string>& splic
 }
 
 std::vector<ParsedToken> convert_to_reverse_notation(const std::vector<ParsedToken>& tokens) {
-    Recognizer recognizer;
-
     // slightly modified shunting yard algorithm.
-    return recognizer.recognize_and_convert_to_infix(tokens);
+
+    // current state of state_machine
+    enum class machine_state
+    {
+        process_operand,
+        process_operator,
+        error,
+    } state = machine_state::process_operand;
+
+    Stack<ParsedToken> stack;
+    std::vector<ParsedToken> result;
+    result.reserve(tokens.size());
+
+    const auto process_operand = [&stack, &result](const auto& token) -> machine_state {
+        if (is_unary_or_function(token) || is_parenthesis(token)) {
+            stack.push(token);
+            return machine_state::process_operand;
+        } else if (token.type == TokenType::number || token.type == TokenType::variable) {
+            result.emplace_back(token);
+            return machine_state::process_operator;
+        }
+        return machine_state::error;
+    };
+
+    const auto process_operator = [&stack, &result](const auto& token) -> machine_state {
+        if (token.type == TokenType::close_par) {
+            if (stack.empty()) {
+                fmt::print(stderr, "Error processing \")\" Operator stack is empty. Mismatched parenthesis?\n");
+                return machine_state::error;
+            }
+            while (stack.top().type != TokenType::open_par) {
+                result.emplace_back(stack.pop());
+                if (stack.empty()) {
+                    fmt::print(stderr, "Error processing \")\" Operator stack is empty. Mismatched parenthesis?\n");
+                    return machine_state::error;
+                }
+            }
+            stack.pop();
+            return machine_state::process_operator;
+        } else if (is_operator(token)) {
+            while (!stack.empty()
+                   && (stack.top().type != TokenType::open_par || stack.top().priority() > token.priority())) {
+                result.emplace_back(stack.pop());
+            }
+            stack.push(token);
+            return machine_state::process_operand;
+        }
+        return machine_state::error;
+    };
+
+    for (const auto& token : tokens) {
+        switch (state) {
+            case machine_state::process_operand: state = process_operand(token); break;
+            case machine_state::process_operator: state = process_operator(token); break;
+            case machine_state::error: {
+                // in case of error - failfast from current function.
+                fmt::print(stderr, "Error while processing {} token", token);
+                return std::vector<ParsedToken>{};
+            }
+        }
+    }
+
+    for (auto&& token : stack) {
+        if (!is_parenthesis(token)) {
+            result.emplace_back(token);
+        }
+    }
+
+    return result;
 }
 
 std::shared_ptr<Expression> reverse_notation_to_expression(const std::vector<ParsedToken>& parsed_tokens) {
@@ -215,85 +281,5 @@ std::shared_ptr<Expression> reverse_notation_to_expression(const std::vector<Par
 
     return temp.pop();
 }
-
-std::vector<ParsedToken> Recognizer::recognize_and_convert_to_infix(const std::vector<ParsedToken>& tokens) {
-    parsing_result.clear();
-    stack.clear();
-    parsing_result.reserve(tokens.size());
-
-    auto token_begin = tokens.begin();
-    if (!process_operand(token_begin, tokens.end())) {
-        fmt::print(stderr, "Parsing error! Expr : {}\n", fmt::join(tokens, ", "));
-        --token_begin;
-        fmt::print(stderr, "Error at : {} : {}\n", std::distance(tokens.begin(), token_begin), *token_begin);
-        parsing_result.clear();
-        stack.clear();
-        return std::vector<ParsedToken> {};
-    } else {
-        return parsing_result;
-    }
-}
-
-bool Recognizer::process_operand(auto& token_stream_pos, const auto token_stream_end) {
-    if (token_stream_pos == token_stream_end) {
-        fmt::print(stderr, "Error! Token stream ended abruptly. Expected an operand found nothing.\n");
-        return false;
-    } else {
-        const auto& current_token = *token_stream_pos;
-        if (is_unary_or_function(current_token) || is_parenthesis(current_token)) {
-            stack.push(current_token);
-            return process_operand(++token_stream_pos, token_stream_end);
-        } else if (current_token.type == TokenType::number || current_token.type == TokenType::variable) {
-            parsing_result.emplace_back(current_token);
-            return process_operator(++token_stream_pos, token_stream_end);
-        } else {
-            fmt::print(stderr, "Error! Unexpected token: {}\n", current_token);
-            return false;
-        }
-    }
-}
-
-bool Recognizer::process_operator(auto& token_stream_pos, auto token_stream_end) {
-    if (token_stream_pos == token_stream_end) {
-        while (!stack.empty()) {
-            auto token = stack.pop();
-            if (token.type == TokenType::open_par) {
-                fmt::print(
-                    stderr,
-                    "Error! Found \"(\" while processing operator (emptying the stack). Mismatched parenthesis?\n");
-                return false;
-            }
-            parsing_result.emplace_back(token);
-        }
-        return true;
-    }
-    const auto& current_token = *token_stream_pos;
-    if (current_token.type == TokenType::close_par) {
-        if (stack.empty()) {
-            fmt::print(stderr, "Error processing \")\" Operator stack is empty. Mismatched parenthesis?\n");
-            return false;
-        }
-        while (stack.top().type != TokenType::open_par) {
-            parsing_result.emplace_back(stack.pop());
-            if (stack.empty()) {
-                fmt::print(stderr, "Error processing \")\" Operator stack is empty. Mismatched parenthesis?\n");
-                return false;
-            }
-        }
-        stack.pop();
-        return process_operator(++token_stream_pos, token_stream_end);
-    } else if (is_operator(current_token)) {
-        while (!stack.empty()
-               && (stack.top().type != TokenType::open_par || stack.top().priority() > current_token.priority())) {
-            parsing_result.emplace_back(stack.pop());
-        }
-        stack.push(current_token);
-        return process_operand(++token_stream_pos, token_stream_end);
-    } else {
-        fmt::print(stderr, "Error! Found : {} while processing operator.\n", current_token);
-        return false;
-    }
-}
-
 
 } // namespace parser::internal
