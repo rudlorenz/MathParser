@@ -11,11 +11,6 @@
 namespace mexpr
 {
 
-// clang-format off
-template <class... Ts> struct overload_lambda : Ts... { using Ts::operator()...; };
-template <class... Ts> overload_lambda(Ts...) -> overload_lambda<Ts ...>;
-// clang-format on
-
 enum class unary_expr_type
 {
     sin,
