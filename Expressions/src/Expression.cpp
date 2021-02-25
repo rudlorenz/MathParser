@@ -105,34 +105,34 @@ Expression diff_div_impl(
 }
 } // namespace
 
-Expression::Expression(int val) : value_(val) {
+Expression::Expression(int val) : value_{val} {
 }
 
 
-Expression::Expression(std::string name) : value_(name) {
+Expression::Expression(std::string name) : value_{name} {
 }
 
 
 Expression::Expression(unary_expr_type expr_type, std::unique_ptr<Expression> expr)
-    : value_(std::make_tuple(expr_type, std::move(expr))) {
+    : value_{std::make_tuple(expr_type, std::move(expr))} {
 }
 
 
 Expression::Expression(unary_expr_type expr_type, Expression&& expr)
-    : value_(std::make_tuple(expr_type, std::make_unique<Expression>(std::move(expr)))) {
+    : value_{std::make_tuple(expr_type, std::make_unique<Expression>(std::move(expr)))} {
 }
 
 
 Expression::Expression(binary_expr_type expr_type, std::unique_ptr<Expression> lhs, std::unique_ptr<Expression> rhs)
-    : value_(std::make_tuple(expr_type, std::move(lhs), std::move(rhs))) {
+    : value_{std::make_tuple(expr_type, std::move(lhs), std::move(rhs))} {
 }
 
 
 Expression::Expression(binary_expr_type expr_type, Expression&& lhs, Expression&& rhs)
-    : value_(std::make_tuple(
+    : value_{std::make_tuple(
         expr_type,
         std::make_unique<Expression>(std::move(lhs)),
-        std::make_unique<Expression>(std::move(rhs)))) {
+        std::make_unique<Expression>(std::move(rhs)))} {
 }
 
 
