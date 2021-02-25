@@ -137,151 +137,155 @@ Expression::Expression(binary_expr_type expr_type, Expression&& lhs, Expression&
 
 
 Expression Expression::clone() const {
-    return std::visit(
-        overload_lambda {
-            [](const int val) { return Expression {val}; },
-            [](const std::string& name) { return Expression {name}; },
-            [](const unary_expr& uexpr) {
-                const auto& [type, value] = uexpr;
-                return Expression {type, value->clone()};
-            },
-            [](const binary_expr& bexpr) {
-                const auto& [type, lhs, rhs] = bexpr;
-                return Expression {type, lhs->clone(), rhs->clone()};
-            }},
-        value_);
+    if (std::holds_alternative<binary_expr>(value_)) {
+        const auto& [type, lhs, rhs] = std::get<binary_expr>(value_);
+        return Expression {type, lhs->clone(), rhs->clone()};
+    } else if (std::holds_alternative<unary_expr>(value_)) {
+        const auto& [type, value] = std::get<unary_expr>(value_);
+        return Expression {type, value->clone()};
+    } else if (std::holds_alternative<std::string>(value_)) {
+        return Expression {std::get<std::string>(value_)};
+    } else if (std::holds_alternative<int>(value_)) {
+        return Expression {std::get<int>(value_)};
+    }
 }
 
 
 Expression Expression::diff(const std::string_view var) const {
-    return std::visit(
-        overload_lambda {
-            [](const int) { return Expression {0}; },
-            [&var](const std::string& name) { return name == var ? Expression {1} : Expression {0}; },
-            [&var](const unary_expr& uexpr) {
-                const auto& [type, value] = uexpr;
-                switch (type) {
-                    case unary_expr_type::unary_minus:
-                        return value->contains_var(var) //
-                            ? Expression {type, value->diff(var)}
-                            : Expression {0};
-                    case unary_expr_type::sin:
-                        return value->contains_var(var)
-                            ? Expression {
-                                binary_expr_type::mul,
-                                value->diff(var),
-                                Expression {unary_expr_type::cos, std::make_unique<Expression>(value->clone())}}
-                            : Expression {0};
 
-                    case unary_expr_type::cos:
-                        return value->contains_var(var)
-                            ? Expression {
-                                binary_expr_type::mul,
-                                value->diff(var),
-                                Expression {
-                                    unary_expr_type::unary_minus,
-                                    Expression {unary_expr_type::sin, std::make_unique<Expression>(value->clone())}}}
-                            : Expression {0};
-                }
-            },
-            [&var](const binary_expr& bexpr) {
-                const auto& type = std::get<0>(bexpr);
-                switch (type) {
-                    case binary_expr_type::sum:
-                    case binary_expr_type::sub: return diff_sum_sub_impl(bexpr, var);
-                    case binary_expr_type::mul: return diff_mul_impl(bexpr, var);
-                    case binary_expr_type::div: return diff_div_impl(bexpr, var);
-                }
-            }},
-        value_);
+    if (std::holds_alternative<binary_expr>(value_)) {
+        // first unpack variant value
+        const auto& bexpr = std::get<binary_expr>(value_);
+        // then unpack tuple from variant value
+        const auto& type = std::get<0>(bexpr);
+        switch (type) {
+            case binary_expr_type::sum:
+            case binary_expr_type::sub: return diff_sum_sub_impl(bexpr, var);
+            case binary_expr_type::mul: return diff_mul_impl(bexpr, var);
+            case binary_expr_type::div: return diff_div_impl(bexpr, var);
+        }
+    } else if (std::holds_alternative<unary_expr>(value_)) {
+        const auto& uexpr = std::get<unary_expr>(value_);
+        const auto& [type, value] = uexpr;
+        switch (type) {
+            case unary_expr_type::unary_minus:
+                return value->contains_var(var) //
+                    ? Expression {type, value->diff(var)}
+                    : Expression {0};
+            case unary_expr_type::sin:
+                return value->contains_var(var)
+                    ? Expression {
+                        binary_expr_type::mul,
+                        value->diff(var),
+                        Expression {unary_expr_type::cos, std::make_unique<Expression>(value->clone())}}
+                    : Expression {0};
+
+            case unary_expr_type::cos:
+                return value->contains_var(var)
+                    ? Expression {
+                        binary_expr_type::mul,
+                        value->diff(var),
+                        Expression {
+                            unary_expr_type::unary_minus,
+                            Expression {unary_expr_type::sin, std::make_unique<Expression>(value->clone())}}}
+                    : Expression {0};
+        }
+    } else if (std::holds_alternative<std::string>(value_)) {
+        const auto& name = std::get<std::string>(value_);
+        return name == var //
+            ? Expression {1}
+            : Expression {0};
+    } else {
+        return Expression {0};
+    }
 }
 
 
 std::string Expression::to_expr_string() const {
-    return std::visit(
-        overload_lambda {
-            [](const int val) { return fmt::format("Num({})", val); },
-            [](const std::string& name) { return fmt::format("Var({})", name); },
-            [](const unary_expr& uexpr) {
-                const auto& [type, value] = uexpr;
-                if (type == unary_expr_type::unary_minus) {
-                    return fmt::format("-{}", value->to_expr_string());
-                } else {
-                    return fmt::format("{}({})", type, value->to_expr_string());
-                }
-            },
-            [](const binary_expr& bexpr) {
-                const auto& [type, lhs, rhs] = bexpr;
-                return fmt::format("{}({}, {})", type, lhs->to_expr_string(), rhs->to_expr_string());
-            }},
-        value_);
+    if (std::holds_alternative<binary_expr>(value_)) {
+        const auto& [type, lhs, rhs] = std::get<binary_expr>(value_);
+        return fmt::format("{}({}, {})", type, lhs->to_expr_string(), rhs->to_expr_string());
+    }
+    else if (std::holds_alternative<std::string>(value_)) {
+        return fmt::format("Var({})", std::get<std::string>(value_));
+    }
+    else if (std::holds_alternative<unary_expr>(value_)) {
+        const auto& [type, value] = std::get<unary_expr>(value_);
+        if (type == unary_expr_type::unary_minus) {
+            return fmt::format("-{}", value->to_expr_string());
+        } else {
+            return fmt::format("{}({})", type, value->to_expr_string());
+        }
+    }
+
+    // to silence the warning
+    return fmt::format("Num({})", std::get<int>(value_));
 }
 
 
 std::string Expression::to_string() const {
-    return std::visit(
-        overload_lambda {
-            [](const int val) { return fmt::format("{}", val); },
-            [](const std::string& name) { return name; },
-            [](const unary_expr& uexpr) {
-                const auto& [type, value] = uexpr;
-                if (type == unary_expr_type::unary_minus) {
-                    return fmt::format("-{}", value->to_string());
-                } else {
-                    return fmt::format("{}({})", type, value->to_string());
-                }
-            },
-            [](const binary_expr& bexpr) {
-                const auto& [type, lhs, rhs] = bexpr;
-                std::string op;
-                switch (type) {
-                    case binary_expr_type::sum: op = "-"; break;
-                    case binary_expr_type::sub: op = "+"; break;
-                    case binary_expr_type::mul: op = "*"; break;
-                    case binary_expr_type::div: op = "/"; break;
-                }
-                return fmt::format("({} {} {})", lhs->to_string(), op, rhs->to_string());
-            }},
-        value_);
+    if (std::holds_alternative<binary_expr>(value_)) {
+        const auto& [type, lhs, rhs] = std::get<binary_expr>(value_);
+        std::string op;
+        switch (type) {
+            case binary_expr_type::sum: op = "-"; break;
+            case binary_expr_type::sub: op = "+"; break;
+            case binary_expr_type::mul: op = "*"; break;
+            case binary_expr_type::div: op = "/"; break;
+        }
+        return fmt::format("({} {} {})", lhs->to_string(), op, rhs->to_string());
+    }
+    else if (std::holds_alternative<unary_expr>(value_)) {
+        const auto& [type, value] = std::get<unary_expr>(value_);
+        if (type == unary_expr_type::unary_minus) {
+            return fmt::format("-{}", value->to_string());
+        } else {
+            return fmt::format("{}({})", type, value->to_string());
+        }
+    }
+    else if (std::holds_alternative<std::string>(value_)) {
+        return std::get<std::string>(value_);
+    }
+
+    return fmt::format("{}", std::get<int>(value_));
 }
 
 
 bool Expression::contains_var(const std::string_view var) const {
-    return std::visit(
-        overload_lambda {
-            [](const int) { return false; },
-            [&var](const std::string& name) { return name == var; },
-            [&var](const unary_expr& uexpr) { return std::get<1>(uexpr)->contains_var(var); },
-            [&var](const binary_expr& bexpr) {
-                return std::get<1>(bexpr)->contains_var(var) or std::get<2>(bexpr)->contains_var(var);
-            }},
-        value_);
+    if (std::holds_alternative<binary_expr>(value_)) {
+        const auto& bexpr = std::get<binary_expr>(value_);
+        return std::get<1>(bexpr)->contains_var(var) or std::get<2>(bexpr)->contains_var(var);
+    } else if (std::holds_alternative<unary_expr>(value_)) {
+        const auto& uexpr = std::get<unary_expr>(value_);
+        return std::get<1>(uexpr)->contains_var(var);
+    } else if (std::holds_alternative<std::string>(value_)) {
+        return std::get<std::string>(value_) == var;
+    } else {
+        return false;
+    }
 }
 
 
 bool Expression::operator==(const Expression& other) const {
-    return std::visit(
-        overload_lambda {
-            [](const int lhs, const int rhs) { return lhs == rhs; },
-            [](const std::string& lhs, const std::string& rhs) { return lhs == rhs; },
-            [](const unary_expr& lhs, const unary_expr& rhs) {
-                const auto& [lhs_type, lhs_value] = lhs;
-                const auto& [rhs_type, rhs_value] = rhs;
-                return lhs_type == rhs_type and (*lhs_value) == (*rhs_value);
-            },
-            [](const binary_expr& lhs, const binary_expr& rhs) {
-                const auto& [lhs_type, lhs_left_value, lhs_right_value] = lhs;
-                const auto& [rhs_type, rhs_left_value, rhs_right_value] = rhs;
-                return lhs_type == rhs_type                    //
-                    and (*lhs_left_value) == (*rhs_left_value) //
-                    and (*lhs_right_value) == (*rhs_right_value);
-            },
-            [](const auto&, const auto&) {
-                // if lhs and rhs have different variant types.
-                return false;
-            }},
-        value_,
-        other.value_);
+    if (value_.index() == other.value_.index()) {
+        if (std::holds_alternative<binary_expr>(value_) and std::holds_alternative<binary_expr>(other.value_)) {
+            const auto& [lhs_type, lhs_left_value, lhs_right_value] = std::get<binary_expr>(value_);
+            const auto& [rhs_type, rhs_left_value, rhs_right_value] = std::get<binary_expr>(other.value_);
+            return lhs_type == rhs_type                    //
+                and (*lhs_left_value) == (*rhs_left_value) //
+                and (*lhs_right_value) == (*rhs_right_value);
+        }
+        else if (std::holds_alternative<unary_expr>(value_) and std::holds_alternative<unary_expr>(other.value_)) {
+            const auto& [lhs_type, lhs_value] = std::get<unary_expr>(value_);
+            const auto& [rhs_type, rhs_value] = std::get<unary_expr>(other.value_);
+            return lhs_type == rhs_type and (*lhs_value) == (*rhs_value);
+        } else if (std::holds_alternative<std::string>(value_) and std::holds_alternative<std::string>(other.value_)) {
+            return std::get<std::string>(value_) == std::get<std::string>(other.value_);
+        } else if (std::holds_alternative<int>(value_) and std::holds_alternative<int>(other.value_)) {
+            return std::get<int>(value_) == std::get<int>(other.value_);
+        }
+    }
+    return false;
 }
 
 

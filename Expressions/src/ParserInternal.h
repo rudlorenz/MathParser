@@ -43,6 +43,6 @@ public:
 std::vector<std::string> splice_string(const std::string& input);
 std::vector<ParsedToken> convert_to_tokens(const std::vector<std::string>& spliced);
 std::vector<ParsedToken> convert_to_reverse_notation(const std::vector<ParsedToken>& tokens);
-mexpr::Expression reverse_notation_to_expression(const std::vector<ParsedToken>& parsed_tokens);
+mexpr::Expression reverse_notation_to_expression(std::vector<ParsedToken>&& parsed_tokens);
 
 } // namespace parser::internal

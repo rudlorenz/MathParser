@@ -274,7 +274,7 @@ std::vector<ParsedToken> convert_to_reverse_notation(const std::vector<ParsedTok
     return result;
 }
 
-Expression reverse_notation_to_expression(const std::vector<ParsedToken>& parsed_tokens) {
+Expression reverse_notation_to_expression(std::vector<ParsedToken>&& parsed_tokens) {
     std::vector<Expression> temp;
     temp.reserve(parsed_tokens.size());
 
