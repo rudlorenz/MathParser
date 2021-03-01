@@ -7,6 +7,7 @@
 #include <string_view>
 #include <tuple>
 #include <variant>
+#include <unordered_map>
 
 namespace mexpr
 {
@@ -44,14 +45,15 @@ public:
 
 public:
     [[nodiscard]] Expression clone() const;
-    [[nodiscard]] Expression diff(std::string_view var) const;
+    [[nodiscard]] Expression diff(std::string_view var);
 
     std::string to_expr_string() const;
     std::string to_string() const;
 
-    bool contains_var(std::string_view var) const;
+    bool contains_var(std::string_view var);
 
 private:
+    std::unordered_map<std::string_view, bool> variable_lookup_cache_;
     std::variant<int, std::string, unary_expr, binary_expr> value_;
 };
 } // namespace mexpr

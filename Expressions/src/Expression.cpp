@@ -6,10 +6,10 @@ namespace mexpr
 inline namespace
 {
 Expression diff_sum_sub_impl(
-    const std::tuple<binary_expr_type, std::unique_ptr<Expression>, std::unique_ptr<Expression>>& bexpr,
+    std::tuple<binary_expr_type, std::unique_ptr<Expression>, std::unique_ptr<Expression>>& bexpr,
     const std::string_view var) {
 
-    const auto& [type, lhs, rhs] = bexpr;
+    auto& [type, lhs, rhs] = bexpr;
     bool lhs_contains_var = lhs->contains_var(var);
     bool rhs_contains_var = rhs->contains_var(var);
 
@@ -23,10 +23,10 @@ Expression diff_sum_sub_impl(
 }
 
 Expression diff_mul_impl(
-    const std::tuple<binary_expr_type, std::unique_ptr<Expression>, std::unique_ptr<Expression>>& bexpr,
+    std::tuple<binary_expr_type, std::unique_ptr<Expression>, std::unique_ptr<Expression>>& bexpr,
     const std::string_view var) {
 
-    const auto& [type, lhs, rhs] = bexpr;
+    auto& [type, lhs, rhs] = bexpr;
     bool lhs_contains_var = lhs->contains_var(var);
     bool rhs_contains_var = rhs->contains_var(var);
     if (not(lhs_contains_var or rhs_contains_var)) {
@@ -53,10 +53,10 @@ Expression diff_mul_impl(
 }
 
 Expression diff_div_impl(
-    const std::tuple<binary_expr_type, std::unique_ptr<Expression>, std::unique_ptr<Expression>>& bexpr,
+    std::tuple<binary_expr_type, std::unique_ptr<Expression>, std::unique_ptr<Expression>>& bexpr,
     const std::string_view var) {
 
-    const auto& [type, lhs, rhs] = bexpr;
+    auto& [type, lhs, rhs] = bexpr;
     bool lhs_contains_var = lhs->contains_var(var);
     bool rhs_contains_var = rhs->contains_var(var);
 
@@ -105,31 +105,35 @@ Expression diff_div_impl(
 }
 } // namespace
 
-Expression::Expression(int val) : value_{val} {
+Expression::Expression(int val) : variable_lookup_cache_{}, value_{val} {
 }
 
 
-Expression::Expression(std::string name) : value_{name} {
+Expression::Expression(std::string name) : variable_lookup_cache_{{name, true}}, value_{name} {
 }
 
 
 Expression::Expression(unary_expr_type expr_type, std::unique_ptr<Expression> expr)
-    : value_{std::make_tuple(expr_type, std::move(expr))} {
+    : variable_lookup_cache_{}
+    , value_{std::make_tuple(expr_type, std::move(expr))} {
 }
 
 
 Expression::Expression(unary_expr_type expr_type, Expression&& expr)
-    : value_{std::make_tuple(expr_type, std::make_unique<Expression>(std::move(expr)))} {
+    : variable_lookup_cache_{}
+    , value_{std::make_tuple(expr_type, std::make_unique<Expression>(std::move(expr)))} {
 }
 
 
 Expression::Expression(binary_expr_type expr_type, std::unique_ptr<Expression> lhs, std::unique_ptr<Expression> rhs)
-    : value_{std::make_tuple(expr_type, std::move(lhs), std::move(rhs))} {
+    : variable_lookup_cache_{}
+    , value_{std::make_tuple(expr_type, std::move(lhs), std::move(rhs))} {
 }
 
 
 Expression::Expression(binary_expr_type expr_type, Expression&& lhs, Expression&& rhs)
-    : value_{std::make_tuple(
+    : variable_lookup_cache_{}
+    , value_{std::make_tuple(
         expr_type,
         std::make_unique<Expression>(std::move(lhs)),
         std::make_unique<Expression>(std::move(rhs)))} {
@@ -151,11 +155,11 @@ Expression Expression::clone() const {
 }
 
 
-Expression Expression::diff(const std::string_view var) const {
+Expression Expression::diff(const std::string_view var) {
 
     if (std::holds_alternative<binary_expr>(value_)) {
         // first unpack variant value
-        const auto& bexpr = std::get<binary_expr>(value_);
+        auto& bexpr = std::get<binary_expr>(value_);
         // then unpack tuple from variant value
         const auto& type = std::get<0>(bexpr);
         switch (type) {
@@ -165,8 +169,8 @@ Expression Expression::diff(const std::string_view var) const {
             case binary_expr_type::div: return diff_div_impl(bexpr, var);
         }
     } else if (std::holds_alternative<unary_expr>(value_)) {
-        const auto& uexpr = std::get<unary_expr>(value_);
-        const auto& [type, value] = uexpr;
+        auto& uexpr = std::get<unary_expr>(value_);
+        auto& [type, value] = uexpr;
         switch (type) {
             case unary_expr_type::unary_minus:
                 return value->contains_var(var) //
@@ -251,18 +255,29 @@ std::string Expression::to_string() const {
 }
 
 
-bool Expression::contains_var(const std::string_view var) const {
+bool Expression::contains_var(const std::string_view var) {
+    const auto cache_hit = variable_lookup_cache_.find(var);
+    if (cache_hit != variable_lookup_cache_.end()) {
+        return cache_hit->second;
+    }
+
     if (std::holds_alternative<binary_expr>(value_)) {
         const auto& bexpr = std::get<binary_expr>(value_);
-        return std::get<1>(bexpr)->contains_var(var) or std::get<2>(bexpr)->contains_var(var);
+        bool result = std::get<1>(bexpr)->contains_var(var) or std::get<2>(bexpr)->contains_var(var);
+        variable_lookup_cache_.emplace(var, result);
+        return result;
     } else if (std::holds_alternative<unary_expr>(value_)) {
         const auto& uexpr = std::get<unary_expr>(value_);
-        return std::get<1>(uexpr)->contains_var(var);
+        bool result = std::get<1>(uexpr)->contains_var(var);
+        variable_lookup_cache_.emplace(var, result);
+        return result;
     } else if (std::holds_alternative<std::string>(value_)) {
-        return std::get<std::string>(value_) == var;
-    } else {
-        return false;
+        bool result = std::get<std::string>(value_) == var;
+        variable_lookup_cache_.emplace(var, result);
     }
+
+    variable_lookup_cache_.emplace(var, false);
+    return false;
 }
 
 
